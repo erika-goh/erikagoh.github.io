@@ -120,6 +120,22 @@ $(document).ready(function () {
     updateCount();
   });
 
+const hamburgerMenu = document.querySelector('.hamburger-menu');
+const navbar = document.querySelector('.navbar');
+
+hamburgerMenu.addEventListener('click', () => {
+    hamburgerMenu.classList.toggle('active');
+    navbar.classList.toggle('active');
+});
+
+// Close navbar when a link is clicked
+navbar.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+        hamburgerMenu.classList.remove('active');
+        navbar.classList.remove('active');
+    });
+});
+
 function showExperienceTab(tabId) {
   // Hide all experience content divs
   document.querySelectorAll('.experience-content').forEach(div => {
@@ -238,3 +254,4 @@ document.querySelectorAll('.toggle-quote').forEach(button => {
     }
   });
 });
+
