@@ -1,22 +1,30 @@
-name: Deploy HTML site to GitHub Pages
+name: Deploy Website
 
 on:
   push:
-    branches: [main]  # or 'master' if that's your default branch
+    branches:
+      - main  # or your default branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GH_DEPLOY_TOKEN }}
 
-      - name: Deploy to GitHub Pages public repo
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          external_repository: erikagoh/erikagoh.github.io
-          publish_dir: ./  
-          publish_branch: main 
-          personal_token: ${{ secrets.GH_DEPLOY_TOKEN }}
+    # (Optional) Build step if you have a build process
+    # - name: Build site
+    #   run: npm run build
 
+    - name: Deploy to GitHub Pages
+      run: |
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+        
+        # Example: Push content from your built folder (e.g., ./dist) to gh-pages branch
+        git add .
+        git commit -m "Deploy website"
+        git push origin HEAD:gh-pages --force
