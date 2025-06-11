@@ -255,3 +255,4 @@ document.querySelectorAll('.toggle-quote').forEach(button => {
   });
 });
 
+
