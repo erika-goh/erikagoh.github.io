@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Erika Goh - Portfolio Site</title>
+    <link rel="stylesheet" href="stylesheet.css" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/velocity-animate@2.0.6/velocity.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/swiper/swiper-bundle.min.css"
+    />
+  </head>
+  <body>
+    <header class="header">
+      <a href="#home" class="logo"
+        ><img src="./my_logo.png" alt="Your Logo" style="height: 90px"
+      /></a>
+
+      <nav class="navbar">
+        <a href="#home" style="--i: 1" class="active">Home</a>
+        <a href="#about" style="--i: 2">About</a>
+        <a href="#services" style="--i: 3">Skills</a>
+        <a href="#experience" style="--i: 4">Experience</a>
+        <a href="#projects" style="--i: 4">Projects</a>
+        <a href="#contact" style="--i: 5">Contact</a>
+      </nav>
+    </header>
+
+    <section class="home" id="home">
+      <div class="backDrop"></div>
+      <div class="home-content">
+        <h3>Hello, My Name Is <br /></h3>
+        <h1>Erika Goh <br /></h1>
+        <h3>And I'm a <span class="text"></span></h3>
+        <p>
+          I am a Software Engineering student at McMaster University.
+          <br />(Bachelor of Engineering - BE.Engineering & Co-op)
+        </p>
+        <div class="home-sci">
+          <a
+            href="https://www.linkedin.com/in/erikagoh/"
+            style="--i: 7"
+            class="social-dot linkedin"
+          >
+            <i class="bx bxl-linkedin-square"></i>
+          </a>
+          <a
+            href="https://github.com/ErikaG1"
+            style="--i: 8"
+            class="social-dot github"
+          >
+            <i class="fab fa-github-square"></i>
+          </a>
+          <a
+            href="https://devpost.com/erika_goh"
+            style="--i: 9"
+            class="social-dot devpost"
+          >
+            <i class="fab fa-dev"></i>
+          </a>
+          <a
+            href="https://www.notion.so/Erika-Goh-Portfolio-16258022aca8805788efd5bdfd696d52?source=copy_link"
+            style="--i: 10"
+            class="social-dot notion"
+          >
+            <i class="bx bx-notepad"></i>
+          </a>
+        </div>
+        <a href="#about" class="btn-box">More About Me</a>
+      </div>
+      <span class="home-imgHover"></span>
+    </section>
+
+    <section class="about" id="about">
+      <div class="about-img">
+        <img
+          src="my_profile.png"
+          alt="Profile"
+          style="background: transparent"
+        />
+      </div>
+      <div class="about-text">
+        <h2>About<span> Me</span></h2>
+        <p>
+          <br />Currently, I am in my second year of University, studying
+          Software Engineering & Co-op.<br />
+          <br />
+          I am a hardworking, determined, and passionate individual who has
+          acquired a variety <br />
+          of skills and knowledge from diverse jobs, projects, and design teams
+          which has <br />
+          given me a competitive advantage towards my future endeavors in
+          Engineering.
+        </p>
+      </div>
+      <div class="metrics">
+        <div class="metric">
+          <div class="icon">👩‍💻</div>
+          <div class="number" data-target="215">0</div>
+          <div class="label">LINES OF CODE PER MONTH</div>
+        </div>
+        <div class="metric">
+          <div class="icon">📚</div>
+          <div class="number" data-target="305">0</div>
+          <div class="label">STUDENTS MANAGED IN CLUBS</div>
+        </div>
+        <div class="metric">
+          <div class="icon">🖥️</div>
+          <div class="number" data-target="4">0</div>
+          <div class="label">YEARS OF CODING</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Skills Banner Section -->
+    <div class="skills-banner">
+      <div class="skills-container">
+        <img src="./figma.png" alt="Figma" />
+        <img src="./python.png" alt="Python" />
+        <img src="./javascript.png" alt="JavaScript" />
+        <img src="./html.png" alt="HTML" />
+        <img src="./arduino.png" alt="Arduino" />
+        <img src="./css.png" alt="CSS" />
+        <img src="./matlab.png" alt="Matlab" />
+        <img src="./figma.png" alt="Figma" />
+        <img src="./python.png" alt="Python" />
+        <img src="./javascript.png" alt="JavaScript" />
+        <img src="./html.png" alt="HTML" />
+        <img src="./arduino.png" alt="Arduino" />
+        <img src="./css.png" alt="CSS" />
+        <img src="./matlab.png" alt="Matlab" />
+      </div>
+    </div>
+
+    <section class="services" id="services">
+      <div class="container">
+        <h1 class="sub-title">My <span>Skills</span></h1>
+        <div class="services-list">
+          <div>
+            <i class="fas fa-code"></i>
+            <h2>Programming Languages</h2>
+            <p>
+              Proficient in Python from various hackathons, projects and
+              courses. Comfortable in JavaScript, Java, HTML/CSS, SQL
+            </p>
+          </div>
+          <div data-aos="fade-up" data-aos-duration="1000">
+            <i class="fas fa-cogs"></i>
+            <h2>Developer Tools</h2>
+            <p>
+              Github, API, Visual Studio Code, Spyder, Sublime Text, Figma,
+              Microsoft Office, Autodesk Inventor, Excel
+            </p>
+          </div>
+          <div>
+            <i class="fab fa-dropbox"></i>
+            <h2>Libraries and Frameworks</h2>
+            <p>React, Next.js, Node.js, Pygame</p>
+          </div>
+          <div data-aos="fade-up" data-aos-duration="1000">
+            <i class="fas fa-code"></i>
+            <h2>Web Development</h2>
+            <p>
+              Optimized a hiking app for clients with Ushers Syndrome and
+              difficulties navigating trails using Python, Java, Google APIs
+            </p>
+          </div>
+          <div>
+            <i class="fas fa-atom"></i>
+            <h2>API Integration</h2>
+            <p>Experience implementing diverse APIs such as Google API</p>
+          </div>
+          <div data-aos="fade-up" data-aos-duration="1000">
+            <i class="fab fa-android"></i>
+            <h2>Robotic Computation</h2>
+            <p>
+              Experience developing algorithms for autonomous functionalities
+              using Arduino & Robotics Kits
+            </p>
+          </div>
+          <div data-aos="fade-up" data-aos-duration="1000">
+            <i class="fas fa-award"></i>
+            <h2>Leadership</h2>
+            <p>
+              • Led over 300+ students through clubs in technology and
+              entrepreneurship for 4+ years <br />
+              • Actively demonstrated leadership by mentoring peers through
+              competitive clubs like HOSA and DECA<br />
+              • Leading a technical workshop at Hack the Ridge, and representing
+              my school at the Ontario Student Leadership Conference,<br />
+              an opportunity awarded to only a select number of high-potential
+              students across the province.
+            </p>
+          </div>
+          <div data-aos="fade-up" data-aos-duration="1000">
+            <i class="far fa-file-alt"></i>
+            <h2>Communication & Public Speaking</h2>
+            <p>
+              • Presented research findings to a panel of industry
+              professionals, receiving positive feedback for clarity and
+              delivery. <br />• Led weekly team meetings and project updates,
+              ensuring clear understanding of deliverables and timelines.
+              <br />• Delivered multiple presentations to audiences of 50+ peers
+              and faculty, showcasing technical project outcomes during
+              hackathon workshops.
+            </p>
+          </div>
+          <div data-aos="fade-up" data-aos-duration="1000">
+            <i class="fas fa-award"></i>
+            <h2>Analytical Skills</h2>
+            <p>
+              • Able to interpret complex datasets, identify trends, and draw
+              actionable insights to support data-driven decision-making. <br />
+              • Used Excel to analyze feedback from over 100 survey responses,
+              summarizing results in a dashboard to guide future improvements.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="experience" id="experience">
+      <div class="experience-tabs">
+        <button class="tab-button active" onclick="showExperienceTab('work')">
+          Work
+        </button>
+        <button class="tab-button" onclick="showExperienceTab('volunteer')">
+          Volunteer
+        </button>
+        <button
+          class="tab-button"
+          onclick="showExperienceTab('certifications')"
+        >
+          Certifications
+        </button>
+      </div>
+      <div id="work-experience" class="experience-content active">
+        <h1 class="sub-title">My <span>Work Experience</span></h1>
+        <div class="timeline">
+          <div class="timeline-line-fill"></div>
+          <div class="timeline-top-dot"></div>
+          <div class="timeline-bottom-dot"></div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <h1>Medical Communications Intern – Synapse MedCom</h1>
+              <h3>June 2025 - Present</h3>
+              <p>
+                Crafting high-impact medical visuals, aligning with healthcare
+                standards, and collaborating across teams.
+              </p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <h1>Fullstack Developer - McMaster Engineering Society</h1>
+              <h3>June 2025 - Present</h3>
+              <p>
+                Designing and implementing responsive web applications to
+                streamline student engagement, event registration, and internal
+                operations.
+              </p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <h1>Crew Member/Hostess - Sunset Grill</h1>
+              <h3>August 2022 - June 2023</h3>
+              <p>
+                Delivered high quality customer service in a fast-paced
+                environment, ensuring a positive dining experience for over 100
+                guests daily.
+              </p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <h1>Executive Communications Chair - HOSA</h1>
+              <h3>September 2020 - June 2024</h3>
+              <p>
+                Competed in the written Fall and Spring Leadership Conferences
+                in the Epidemiology event.<br />
+                Mentored over 70 student club members and organized initiatives
+                with other clubs within the school and external organizations
+              </p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <h1>Marketing Executive Trainer - DECA</h1>
+              <h3>September 2020 - June 2023</h3>
+              <p>
+                Competed in the regional marketing event career cluster and
+                advanced to the Provincial level<br />
+                Provided mentorship for over 80 DECA members competing in DECA
+                Regionals and Provincials
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="volunteer-experience" class="experience-content">
+        <h1 class="sub-title">My <span>Volunteer Experience</span></h1>
+        <div class="timeline">
+          <div class="timeline-line-fill"></div>
+          <div class="timeline-top-dot"></div>
+          <div class="timeline-bottom-dot"></div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <h3>Fundraising Volunteer – MedLife</h3>
+              <p>MedLife</p>
+              <ul>
+                <li>
+                  Wrote engaging and research-backed articles for The Frequency,
+                  McMaster Engineering\'s student journal.
+                </li>
+                <li>
+                  Collaborated with the editorial team to pitch ideas, refine
+                  drafts, and align content with the journal\'s themes.
+                </li>
+                <li>
+                  Conducted thorough research and interviews to ensure accuracy
+                  and depth in articles.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="certifications-experience" class="experience-content">
+        <h1 class="sub-title">My <span>Certifications</span></h1>
+        <div class="timeline">
+          <div class="timeline-line-fill"></div>
+          <div class="timeline-top-dot"></div>
+          <div class="timeline-bottom-dot"></div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <h3>Certification Title – Issuing Body</h3>
+              <p>Description of the certification and what it covers.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <h3>Another Certification – Issuing Body</h3>
+              <p>Description of this certification.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section class="projects" id="projects">
+      <div class="container">
+        <h1 class="sub-title">My <span>Projects</span></h1>
+        <div class="swiper mySwiper">
+          <div class="swiper-wrapper">
+            <div class="swiper-slide project-card">
+              <img src="./matlab.png" alt="Project Image" />
+              <div class="project-content">
+                <h3>Data-Driven NBA Team Building</h3>
+                <p class="project-date">March 2025</p>
+                <p class="project-description">
+                  Developed for the QSAO NBA Analytics Case Competition, where
+                  we placed 2nd, this project analyzes a team\'s roster and cap
+                  situation, builds a player valuation framework, and proposes
+                  data-driven free agent signings and a realistic trade to
+                  optimize team performance and future success.
+                </p>
+                <div class="project-tags">
+                  <span class="tag">Python</span>
+                  <span class="tag">pandas</span>
+                  <span class="tag">Matplotlib</span>
+                  <span class="tag">NumPy</span>
+                  <span class="tag">Seaborn</span>
+                </div>
+                <a href="#" class="source-button">
+                  <i class="bx bxl-github"></i> Source
+                </a>
+              </div>
+            </div>
+            <div class="swiper-slide project-card">
+              <img src="./python.png" alt="Project Image" />
+              <div class="project-content">
+                <h3>NumNum</h3>
+                <p class="project-date">January 2025</p>
+                <p class="project-description">
+                  A tinder-style dining app designed to simplify the
+                  decision-making process for choosing where to eat. NumNum
+                  personalizes restaurant recommendations based on user
+                  preferences, location, and dietary needs, alongside an
+                  AI-powered assistant that analyzes menus, suggests tailored
+                  dishes, plans routes, and even assists with reservations.
+                </p>
+                <div class="project-tags">
+                  <span class="tag">React.js</span>
+                  <span class="tag">Next.js</span>
+                  <span class="tag">Typescript</span>
+                  <span class="tag">Python</span>
+                  <span class="tag">Google Cloud Platform</span>
+                  <span class="tag">Gemini API</span>
+                  <span class="tag">Flask</span>
+                </div>
+                <a href="#" class="source-button">
+                  <i class="bx bxl-github"></i> Source
+                </a>
+              </div>
+            </div>
+            <div class="swiper-slide project-card">
+              <img src="./javascript.png" alt="Project Image" />
+              <div class="project-content">
+                <h3>Budgetify</h3>
+                <p class="project-date">December 2024 - January 2025</p>
+                <p class="project-description">
+                  a full-stack expense tracker application allowing users to
+                  track, categorize, and graphically visualize their finances.
+                </p>
+                <div class="project-tags">
+                  <span class="tag">React.js</span>
+                  <span class="tag">Node.js</span>
+                  <span class="tag">Express.js</span>
+                  <span class="tag">MongoDB</span>
+                </div>
+                <a href="#" class="source-button">
+                  <i class="bx bxl-github"></i> Source
+                </a>
+              </div>
+            </div>
+            <div class="swiper-slide project-card">
+              <img src="./css.png" alt="Project Image" />
+              <div class="project-content">
+                <h3>Magic Ring Quest</h3>
+                <p class="project-date">June 2024 - October 2024</p>
+                <p class="project-description">
+                  A Zelda-style RPG game in Python that includes elements using
+                  Pygame library to incorporate graphics, animations,
+                  collisions, fake depth, upgrade mechanics, and a level map.
+                </p>
+                <div class="project-tags">
+                  <span class="tag">Python</span>
+                  <span class="tag">PyGame</span>
+                </div>
+                <a href="#" class="source-button">
+                  <i class="bx bxl-github"></i> Source
+                </a>
+              </div>
+            </div>
+          </div>
+          <!-- Add Pagination -->
+          <div class="swiper-pagination"></div>
+          <!-- Add Navigation -->
+          <div class="swiper-button-next"></div>
+          <div class="swiper-button-prev"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quotes Section -->
+    <section class="quotes-section">
+      <div class="container">
+        <h1 class="sub-title">Team and Peer <span>Feedback</span></h1>
+        <div class="quotes-grid">
+          <div class="quote-card">
+            <p class="quote-text">
+              "Erika, as the administrator of this project, was extremely
+              helpful in terms of the way she helped the team ensure everything
+              was handed in, inside and outside Design Studio meetings. She was
+              very easy to get along with and agreed with most of the group's
+              input, minimizing conflict and arguments. In particular, her work
+              with the final project design was excellent, in the sense that she
+              successfully came up with a simple, yet effective mechanism. In
+              terms of future projects, I think that Erika could be more of a
+              leader. Specifically, during meetings/work periods, providing more
+              input would help the entire group see a problem, or a solution,
+              from multiple perspectives."
+            </p>
+            <p class="quote-author">- ENG1P13 Project 1 Student</p>
+            <button class="toggle-quote">Read More</button>
+          </div>
+          <div class="quote-card">
+            <p class="quote-text">
+              "Erika demonstrated great leadership throughout the project. She
+              had a clear vision for the entire model and ensured the team
+              stayed aligned with her ideas. Her ability to coordinate with
+              everyone, provide guidance, and maintain open communication made
+              her a great team leader. Erika consistently met deadlines, never
+              missed submitting teamwork, and ensured all tasks were completed
+              on time. Her involvement played a huge role in the entire team to
+              stay focused and productive."
+            </p>
+            <p class="quote-author">- ENG1P13 Project 2 Student</p>
+            <button class="toggle-quote">Read More</button>
+          </div>
+          <div class="quote-card">
+            <p class="quote-text">
+              "You were irreplaceable for this project, and your extensive
+              knowledge and learning during this project allowed the final
+              design to be pretty cool. You voiced what needed to be said and
+              listened to everyone else. The responsiveness on teams was much
+              appreciated, and working upon everyone else's code was
+              appreciated" <br />
+              <br />
+              "Great job with your work completing the UI for the app. It was
+              well made and put together in a timely manner. You also stepped up
+              and made up for others missing work when required."
+            </p>
+            <p class="quote-author">- ENG1P13 Project 3 Students</p>
+            <button class="toggle-quote">Read More</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+      <div class="container">
+        <h1 class="sub-title">Contact <span>Me</span></h1>
+        <div class="contact-form">
+          <form
+            action="mailto:erika_goh@ymail.com"
+            method="post"
+            enctype="text/plain"
+          >
+            <div class="input-box">
+              <input type="text" name="Name" placeholder="Your Name" required />
+              <input
+                type="email"
+                name="Email"
+                placeholder="Your Email"
+                required
+              />
+            </div>
+            <textarea
+              name="Message"
+              cols="30"
+              rows="10"
+              placeholder="Your Message"
+              required
+            ></textarea>
+            <input type="submit" value="Send Message" class="btn-box" />
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <script src="main.js"></script>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+      AOS.init();
+    </script>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script>
+      var swiper = new Swiper(".mySwiper", {
+        slidesPerView: 1,
+        spaceBetween: 30,
+        loop: true,
+        pagination: {
+          el: ".swiper-pagination",
+          clickable: true,
+        },
+        navigation: {
+          nextEl: ".swiper-button-next",
+          prevEl: ".swiper-button-prev",
+        },
+        breakpoints: {
+          768: {
+            slidesPerView: 2,
+          },
+          1024: {
+            slidesPerView: 3,
+          },
+        },
+      });
+    </script>
+
+    <!-- 
+    <div class="chatbot-widget" id="chatbot">
+        <div class="chat-header">Ask Me Anything 🤖</div>
+        <div class="chat-body" id="chat-body">
+            <div class="chat-message bot">Hi! I'm ErikaBot. Ask me anything about my skills or projects!</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Type your question..." />
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    -->
+  </body>
+</html>
