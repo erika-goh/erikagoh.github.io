@@ -1,0 +1,22 @@
+name: Deploy HTML site to GitHub Pages
+
+on:
+  push:
+    branches: [main]  # or 'master' if that's your default branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Deploy to GitHub Pages public repo
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          external_repository: erikagoh/erikagoh.github.io
+          publish_dir: ./  
+          publish_branch: main 
+          personal_token: ${{ secrets.GH_DEPLOY_TOKEN }}
+
