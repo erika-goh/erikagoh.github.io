@@ -260,6 +260,11 @@ body {
     gap: 1.5rem;
 }
 
+.about-img {
+    margin-bottom: 20px; /* Add some space below the image */
+    order: 1; /* Ensure image comes first */
+}
+
 .about-img img{
     /* padding-bottom: 20%; Removed as it's not needed with fixed height/width */
     width: 300px; /* Set a fixed width for a smaller image */
@@ -279,6 +284,7 @@ body {
 .about-text {
     margin-left: -20px; /* Adjust as needed */
     margin-top: 50px; /* Added to move the text lower */
+    order: 2; /* Ensure text comes after image */
 }
 
 .about-text h2{
@@ -313,10 +319,12 @@ body {
   gap: 2rem;
   font-family: sans-serif;
   margin-top: 2rem;     /* Reverted to original margin */
+  order: 3; /* Ensure metrics come after text */
 }
 
 .metric {
   text-align: center;
+  margin-bottom: 20px;
 }
 
 .icon {
@@ -1287,17 +1295,26 @@ background-attachment: scroll; /* Allow grid to scroll with the section */
 
 @media (max-width: 768px) {
     .about {
+        display: flex;
         flex-direction: column;
         text-align: center;
     }
 
     .about-img {
-        margin-bottom: 20px; /* Add some space below the image */
+        margin-top: 40px;
+        margin-bottom: 20px;
+        order: 1;
     }
 
     .about-img img {
-        width: 80%; /* Make the image smaller on mobile */
+        width: 80%;
         max-width: 300px;
+    }
+
+    .about-text {
+        font-size: 16px;
+        padding: 0 15px;
+        order: 2;
     }
 
     .about-text h2 {
@@ -1315,6 +1332,7 @@ background-attachment: scroll; /* Allow grid to scroll with the section */
 
     .metrics {
         grid-template-columns: 1fr;
+        order: 3;
     }
 
     .metric {
@@ -1340,25 +1358,25 @@ background-attachment: scroll; /* Allow grid to scroll with the section */
     }
 
     .timeline {
-        padding: 0 20px; /* Adjust padding for smaller screens */
+        padding: 0 20px;
     }
 
     .timeline-item {
         flex-direction: column;
-        align-items: flex-start; /* Align items to start for stacking */
-        text-align: left; /* Align text to left */
+        align-items: flex-start;
+        text-align: left;
     }
 
     .timeline-dot {
-        position: static; /* Remove absolute positioning */
-        margin-bottom: 10px; /* Space below the dot */
+        position: static;
+        margin-bottom: 10px;
     }
 
     .timeline-item:nth-child(odd) .timeline-content,
     .timeline-item:nth-child(even) .timeline-content {
-        margin-left: 0; /* Remove horizontal margin */
-        margin-top: 10px; /* Add some top margin */
-        width: 100%; /* Full width for content */
+        margin-left: 0;
+        margin-top: 10px;
+        width: 100%;
     }
 
     .chatbot-widget {
@@ -1467,4 +1485,5 @@ background-attachment: scroll; /* Allow grid to scroll with the section */
         opacity: 1;
     }
 }
+  
   
