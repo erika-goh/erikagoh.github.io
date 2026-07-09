@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#050505" />
+    <title>Projects — Erika Goh</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <canvas id="treeCanvas" aria-hidden="true"></canvas>
+
+    <header class="site-header">
+      <div class="site-header-inner">
+        <a href="index.html" class="site-logo">
+          <span class="logo-dot" aria-hidden="true"></span>
+          Erika Goh
+        </a>
+        <nav class="site-nav" aria-label="Sections">
+          <a href="index.html">Home</a>
+          <a href="about.html">About</a>
+          <a href="experience.html">Experience</a>
+          <a href="projects.html" class="active">Projects</a>
+          <a href="writing.html">Writing</a>
+          <a href="gallery.html">Gallery</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="content-inner wide">
+        <div class="page-head reveal">
+          <div class="section-label">03 .projects()</div>
+        </div>
+
+        <section class="reveal">
+          <div class="projects-grid">
+            <a
+              class="project"
+              href="https://devpost.com/software/routeiq-sx7mno"
+              target="_blank"
+              rel="noopener"
+            >
+              <div class="project-media">
+                <video autoplay loop muted playsinline>
+                  <source src="routeIQ_vid.mp4" type="video/mp4" />
+                </video>
+              </div>
+              <div class="project-head">
+                <div class="project-title">RouteIQ</div>
+                <div class="project-year">2026</div>
+              </div>
+              <p class="project-desc">
+                Intelligent route-optimization platform combining traffic
+                data with ML-driven predictions for dynamic dispatch.
+                Real-time analytics and a scalable optimization algorithm.
+              </p>
+              <div class="project-tags">
+                <span>Route Optimization</span><span>ML</span
+                ><span>Real-time Analytics</span>
+              </div>
+            </a>
+
+            <a
+              class="project"
+              href="https://github.com/erika-goh/Neurotonomous"
+              target="_blank"
+              rel="noopener"
+            >
+              <div class="project-media">
+                <video autoplay loop muted playsinline>
+                  <source src="neurotonomous_vid.mov" type="video/mp4" />
+                </video>
+              </div>
+              <div class="project-head">
+                <div class="project-title">Neurotonomous</div>
+                <div class="project-year">2024</div>
+              </div>
+              <p class="project-desc">
+                Autonomous system powered by neural networks. Combines
+                deep-learning architectures with real-time decision-making
+                capabilities for intelligent autonomous control.
+              </p>
+              <div class="project-tags">
+                <span>Neural Networks</span><span>PyTorch</span
+                ><span>Python</span>
+              </div>
+            </a>
+
+            <a
+              class="project"
+              href="https://github.com/erika-goh/AlgoSafe-Optimizer"
+              target="_blank"
+              rel="noopener"
+            >
+              <div
+                class="project-media placeholder"
+                data-label="/AlgoSafe"
+              ></div>
+              <div class="project-head">
+                <div class="project-title">AlgoSafe Optimizer</div>
+                <div class="project-year">2024</div>
+              </div>
+              <p class="project-desc">
+                Tool for optimizing algorithms with built-in security
+                protocols — complexity analysis, vulnerability detection,
+                and secure optimization recommendations for production code.
+              </p>
+              <div class="project-tags">
+                <span>TypeScript</span><span>Security</span
+                ><span>Complexity Theory</span>
+              </div>
+            </a>
+
+            <a
+              class="project"
+              href="https://github.com/erika-goh/FinanceTracker"
+              target="_blank"
+              rel="noopener"
+            >
+              <div
+                class="project-media placeholder"
+                data-label="/FinanceTracker"
+              ></div>
+              <div class="project-head">
+                <div class="project-title">FinanceTracker</div>
+                <div class="project-year">2024</div>
+              </div>
+              <p class="project-desc">
+                Finance-tracking app with budget planning, expense
+                categorization, and AI-powered recommendations. Real-time
+                analytics and a clean data-visualization layer.
+              </p>
+              <div class="project-tags">
+                <span>React</span><span>Node.js</span
+                ><span>Finance API</span>
+              </div>
+            </a>
+
+            <a
+              class="project"
+              href="https://github.com/erika-goh/BerryGood-Studio"
+              target="_blank"
+              rel="noopener"
+            >
+              <div
+                class="project-media placeholder"
+                data-label="/BerryGood"
+              ></div>
+              <div class="project-head">
+                <div class="project-title">Berry Good Studio</div>
+                <div class="project-year">2024</div>
+              </div>
+              <p class="project-desc">
+                Creative studio platform combining design tools with
+                development capabilities. Real-time sync between designers
+                and developers with versioning built in.
+              </p>
+              <div class="project-tags">
+                <span>React</span><span>Design Systems</span
+                ><span>Full Stack</span>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <footer class="foot">
+          <div>© 2026 Erika Goh</div>
+          <div>Last updated 07/08/2026</div>
+        </footer>
+      </div>
+    </main>
+
+    <script src="main.js"></script>
+  </body>
+</html>

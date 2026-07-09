@@ -706,7 +706,7 @@ footer span{color:#B99099}
       const color = COLORS[Math.floor(Math.random()*COLORS.length)];
       nodes.push({
         x, y, depth,
-        r: depth === 1 ? 5 : (3.5 - depth*0.3),
+        r: depth === 1 ? 5 : (3.5 — depth*0.3),
         color,
         alpha: 0,
         glow: 0,
@@ -714,13 +714,13 @@ footer span{color:#B99099}
         pulse: Math.random()*Math.PI*2,
       });
       if(parentIdx !== null){
-        edges.push({from:parentIdx, to:idx, alpha:0, drawTime: nodes[idx].drawTime - 0.05});
+        edges.push({from:parentIdx, to:idx, alpha:0, drawTime: nodes[idx].drawTime — 0.05});
       }
       const hGap = hGapBase / Math.pow(2, depth-1);
-      addNode(depth+1, x - hGap/2, y + vGap, idx);
+      addNode(depth+1, x — hGap/2, y + vGap, idx);
       addNode(depth+1, x + hGap/2, y + vGap, idx);
     }
-    addNode(1, cx, cy - vGap * 1.5, null);
+    addNode(1, cx, cy — vGap * 1.5, null);
 
     // Reset sparks
     sparks = [];
@@ -752,15 +752,15 @@ footer span{color:#B99099}
   function draw(now){
     requestAnimationFrame(draw);
     ctx.clearRect(0,0,W,H);
-    const t = (now - startTime) / 1000; // seconds
+    const t = (now — startTime) / 1000; // seconds
 
     // Phase 0: converging sparks (0–1.2s)
     if(t < 1.8){
       sparks.forEach(s=>{
         s.life += 0.016 * s.speed;
         const p = Math.min(s.life / s.maxLife, 1);
-        const x = s.x + (s.tx - s.x)*p;
-        const y = s.y + (s.ty - s.y)*p;
+        const x = s.x + (s.tx — s.x)*p;
+        const y = s.y + (s.ty — s.y)*p;
         const alpha = p < 0.5 ? p*2 : (1-p)*2;
 
         ctx.save();
@@ -791,16 +791,16 @@ footer span{color:#B99099}
 
     // Phase 1+: draw tree edges and nodes
     if(t > 0.8){
-      const treeT = t - 0.8;
+      const treeT = t — 0.8;
 
       // Draw edges
       edges.forEach(e=>{
         if(treeT < e.drawTime) return;
-        const grow = Math.min((treeT - e.drawTime)/0.25, 1);
+        const grow = Math.min((treeT — e.drawTime)/0.25, 1);
         const a = Math.min(nodes[e.to].alpha + 0.04, 0.7) * grow;
         const fn = nodes[e.from], tn = nodes[e.to];
-        const ex = fn.x + (tn.x - fn.x)*grow;
-        const ey = fn.y + (tn.y - fn.y)*grow;
+        const ex = fn.x + (tn.x — fn.x)*grow;
+        const ey = fn.y + (tn.y — fn.y)*grow;
 
         ctx.save();
         ctx.globalAlpha = a;
@@ -848,7 +848,7 @@ footer span{color:#B99099}
         ctx.globalAlpha = a * 0.6;
         ctx.fillStyle = 'rgba(255,255,255,0.8)';
         ctx.beginPath();
-        ctx.arc(n.x - r*0.25, n.y - r*0.25, r*0.35, 0, Math.PI*2);
+        ctx.arc(n.x — r*0.25, n.y — r*0.25, r*0.35, 0, Math.PI*2);
         ctx.fill();
         ctx.restore();
       });

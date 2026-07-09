@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#050505" />
+    <title>Article Title Placeholder — Erika Goh</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <canvas id="treeCanvas" aria-hidden="true"></canvas>
+
+    <main class="content">
+      <div class="content-inner article">
+        <aside class="article-toc" aria-label="Contents">
+          <div class="article-toc-label">contents</div>
+          <ul class="article-toc-list">
+            <li>
+              <a href="#overview" data-target="overview">overview</a>
+            </li>
+            <li>
+              <a href="#background" data-target="background">background</a>
+            </li>
+            <li>
+              <a href="#approach" data-target="approach">approach</a>
+            </li>
+            <li>
+              <a href="#implementation" data-target="implementation"
+                >implementation</a
+              >
+            </li>
+            <li>
+              <a href="#results" data-target="results">results</a>
+            </li>
+            <li>
+              <a href="#takeaways" data-target="takeaways">takeaways</a>
+            </li>
+          </ul>
+        </aside>
+
+        <article class="article-body reveal">
+          <a class="article-back" href="writing.html">
+            <span class="arrow">←</span>
+            <span>Writing</span>
+          </a>
+
+          <h1 class="article-title">Article Title Placeholder</h1>
+          <p class="article-subtitle">
+            Short subtitle that hooks the reader — swap for your real
+            summary.
+          </p>
+          <div class="article-meta">
+            <span>Erika Goh</span>
+            <span>Mar 2026</span>
+            <span>5 min read</span>
+          </div>
+          <hr class="article-divider" />
+
+          <h2 id="overview">Overview</h2>
+          <p>
+            Replace this with the opening of your article — the frame,
+            problem, or premise. Keep it short and specific. State the claim
+            you're going to defend or the finding you're going to share.
+          </p>
+          <p>
+            A second paragraph can extend the setup with the smallest amount
+            of context a reader needs to understand what comes next.
+          </p>
+
+          <h2 id="background">Background</h2>
+          <p>
+            Use this section for the shortest useful version of what came
+            before — prior work, existing patterns, or the state of the tool
+            you're going to change.
+          </p>
+
+          <h2 id="approach">Approach</h2>
+          <p>
+            Describe your approach at a high level here. What did you
+            change, and why did you expect it to work? A single mechanism
+            explained clearly beats three mentioned in passing.
+          </p>
+          <blockquote>
+            A pull-quote or callout works well here to break up dense
+            paragraphs and highlight a claim.
+          </blockquote>
+
+          <h2 id="implementation">Implementation</h2>
+          <p>
+            The mechanics: what you built, in enough detail that another
+            engineer could reason about it. Inline <code>code</code> and
+            fenced blocks are supported.
+          </p>
+          <pre><code>function loop() {
+  // sample implementation snippet
+  return result;
+}</code></pre>
+
+          <h2 id="results">Results</h2>
+          <p>
+            Numbers, benchmarks, or before/after comparisons live here.
+            Prefer honest deltas over hype. If something didn't work, say
+            so.
+          </p>
+          <ul>
+            <li>Metric one: 0 → 42.</li>
+            <li>Metric two: 3.4s → 0.9s.</li>
+            <li>Metric three: qualitative improvement in X.</li>
+          </ul>
+
+          <h2 id="takeaways">Takeaways</h2>
+          <p>
+            Close with the durable lesson — the one thing you'd tell the
+            past version of yourself. A short conclusion beats a long one.
+          </p>
+        </article>
+      </div>
+    </main>
+
+    <script src="main.js"></script>
+  </body>
+</html>

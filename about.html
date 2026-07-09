@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#050505" />
+    <title>About — Erika Goh</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <canvas id="treeCanvas" aria-hidden="true"></canvas>
+
+    <header class="site-header">
+      <div class="site-header-inner">
+        <a href="index.html" class="site-logo">
+          <span class="logo-dot" aria-hidden="true"></span>
+          Erika Goh
+        </a>
+        <nav class="site-nav" aria-label="Sections">
+          <a href="index.html">Home</a>
+          <a href="about.html" class="active">About</a>
+          <a href="experience.html">Experience</a>
+          <a href="projects.html">Projects</a>
+          <a href="writing.html">Writing</a>
+          <a href="gallery.html">Gallery</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="content-inner">
+        <div class="page-head reveal">
+          <div class="section-label">01 .about()</div>
+        </div>
+
+        <section class="reveal">
+          <div class="prose prose-bright bio-lead">
+            <p>
+              Hi! I'm a
+              <span class="accent">Software Engineering</span> student at
+              McMaster University, my interests usually vary but I find
+              myself drawn to:
+            </p>
+            <ul>
+              <li>AI and machine learning</li>
+              <li>Robotics &amp; autonomous systems</li>
+              <li>Game Development (VR/AR)</li>
+              <li>Data Science &amp; Analytics</li>
+            </ul>
+            <p>
+              Beyond coding, I stay active through soccer, running,
+              swimming, and tennis, and I also love art. I'm passionate
+              about using technology to contribute to the world's
+              advancement and create solutions that have a meaningful,
+              lasting impact.
+            </p>
+          </div>
+
+          <div class="subsection">
+            <div class="section-label">.education()</div>
+            <article class="row edu-row">
+              <div class="row-head">
+                <div class="edu-title-block">
+                  <img
+                    src="mcmaster.svg"
+                    alt="McMaster University"
+                    class="edu-logo-side"
+                  />
+                  <div>
+                    <div class="row-title">McMaster University</div>
+                    <div class="row-sub">
+                      Bachelor of Software Engineering B.Eng
+                    </div>
+                  </div>
+                </div>
+                <div class="row-date">SEP 2024 — APR 2028</div>
+              </div>
+              <div class="row-body">
+                Coursework: Data Structures &amp; Algorithms, Computer
+                Architecture, Software Design I, Discrete Mathematics &amp;
+                Applications, Object-Oriented Programming, Digital Systems
+                &amp; Interfacing.
+              </div>
+            </article>
+          </div>
+
+          <div class="subsection">
+            <div class="section-label">.stack()</div>
+            <div class="skill-row">
+              <div class="skill-row-title">Languages</div>
+              <div class="skill-row-items">
+                <span>Python</span><span>TypeScript</span
+                ><span>JavaScript</span><span>Java</span><span>C / C++</span
+                ><span>SQL</span><span>Bash</span><span>HTML / CSS</span>
+              </div>
+            </div>
+            <div class="skill-row">
+              <div class="skill-row-title">Frameworks</div>
+              <div class="skill-row-items">
+                <span>React</span><span>Next.js</span
+                ><span>React Router</span><span>Node.js</span
+                ><span>Hono</span><span>PyTorch</span
+                ><span>TensorFlow</span><span>NumPy</span>
+              </div>
+            </div>
+            <div class="skill-row">
+              <div class="skill-row-title">Infra &amp; Cloud</div>
+              <div class="skill-row-items">
+                <span>AWS</span><span>Vercel</span><span>Supabase</span
+                ><span>Docker</span><span>Terraform</span><span>CI/CD</span
+                ><span>Linux</span>
+              </div>
+            </div>
+            <div class="skill-row">
+              <div class="skill-row-title">Tools</div>
+              <div class="skill-row-items">
+                <span>Git</span><span>PostgreSQL</span><span>Figma</span
+                ><span>LLMs</span><span>Cursor</span><span>VS Code</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer class="foot">
+          <div>© 2026 Erika Goh</div>
+          <div>Last updated 07/08/2026</div>
+        </footer>
+      </div>
+    </main>
+
+    <script src="main.js"></script>
+  </body>
+</html>

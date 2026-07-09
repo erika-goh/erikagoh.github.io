@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#050505" />
+    <title>Writing — Erika Goh</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <canvas id="treeCanvas" aria-hidden="true"></canvas>
+
+    <header class="site-header">
+      <div class="site-header-inner">
+        <a href="index.html" class="site-logo">
+          <span class="logo-dot" aria-hidden="true"></span>
+          Erika Goh
+        </a>
+        <nav class="site-nav" aria-label="Sections">
+          <a href="index.html">Home</a>
+          <a href="about.html">About</a>
+          <a href="experience.html">Experience</a>
+          <a href="projects.html">Projects</a>
+          <a href="writing.html" class="active">Writing</a>
+          <a href="gallery.html">Gallery</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="content-inner">
+        <div class="page-head reveal">
+          <div class="section-label">04 .writing()</div>
+        </div>
+
+        <section class="reveal">
+          <div class="writing-list">
+            <a class="writing-entry" href="article-4.html">
+              <div class="writing-head">
+                <h3 class="writing-title">
+                  I built KernelBench for Apple Silicon
+                </h3>
+                <span class="writing-date">Jul 2026</span>
+              </div>
+              <p class="writing-desc">
+                Porting a GPU kernel benchmarking framework to run natively
+                on Apple Silicon.
+              </p>
+            </a>
+
+            <a class="writing-entry" href="article-1.html">
+              <div class="writing-head">
+                <h3 class="writing-title">Complex Systems</h3>
+                <span class="writing-date">Jun 2026</span>
+              </div>
+              <p class="writing-desc">
+                Notes on emergent behavior and feedback in complex systems.
+              </p>
+            </a>
+
+            <a class="writing-entry" href="article-2.html">
+              <div class="writing-head">
+                <h3 class="writing-title">Three-Body Problem</h3>
+                <span class="writing-date">May 2026</span>
+              </div>
+              <p class="writing-desc">
+                Exploring the chaos of three gravitating bodies.
+              </p>
+            </a>
+
+            <a class="writing-entry" href="article-3.html">
+              <div class="writing-head">
+                <h3 class="writing-title">Tensor Networks</h3>
+                <span class="writing-date">May 2026</span>
+              </div>
+              <p class="writing-desc">
+                How tensor contractions generalize matrix operations for
+                high-dimensional data.
+              </p>
+            </a>
+
+          </div>
+
+        </section>
+
+        <footer class="foot">
+          <div>© 2026 Erika Goh</div>
+          <div>Last updated 07/08/2026</div>
+        </footer>
+      </div>
+    </main>
+
+    <script src="main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#050505" />
+    <title>Gallery — Erika Goh</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <canvas id="treeCanvas" aria-hidden="true"></canvas>
+
+    <header class="site-header">
+      <div class="site-header-inner">
+        <a href="index.html" class="site-logo">
+          <span class="logo-dot" aria-hidden="true"></span>
+          Erika Goh
+        </a>
+        <nav class="site-nav" aria-label="Sections">
+          <a href="index.html">Home</a>
+          <a href="about.html">About</a>
+          <a href="experience.html">Experience</a>
+          <a href="projects.html">Projects</a>
+          <a href="writing.html">Writing</a>
+          <a href="gallery.html" class="active">Gallery</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="content-inner wide">
+        <div class="page-head reveal">
+          <div class="section-label">05 .gallery()</div>
+        </div>
+
+        <section class="reveal">
+          <div class="prose" style="margin-bottom: 2rem">
+            <p>
+              A quieter space — beyond engineering, a collection of my
+              digital and traditional art.
+            </p>
+          </div>
+          <div class="gallery-grid">
+            <figure class="gallery-item">
+              <div class="gallery-media">
+                <img src="gallery-jaguar.jpg" alt="Pencil sketch of a roaring jaguar" />
+              </div>
+              <figcaption>Graphite · 2026</figcaption>
+            </figure>
+            <figure class="gallery-item">
+              <div class="gallery-media">
+                <img src="gallery-img3.jpg" alt="" />
+              </div>
+              <figcaption>Pencil · 2024</figcaption>
+            </figure>
+            <figure class="gallery-item">
+              <div class="gallery-media">
+                <img src="gallery-strawberry.jpg" alt="Strawberry illustration" />
+              </div>
+              <figcaption>Digital · 2026</figcaption>
+            </figure>
+            <figure class="gallery-item">
+              <div class="gallery-media">
+                <img src="gallery-img4.jpg" alt="" />
+              </div>
+              <figcaption>Pencil · 2021</figcaption>
+            </figure>
+            <figure class="gallery-item">
+              <div class="gallery-media" data-placeholder="05"></div>
+            </figure>
+            <figure class="gallery-item">
+              <div class="gallery-media" data-placeholder="06"></div>
+            </figure>
+          </div>
+        </section>
+
+        <footer class="foot">
+          <div>© 2026 Erika Goh</div>
+          <div>Last updated 07/08/2026</div>
+        </footer>
+      </div>
+    </main>
+
+    <script src="main.js"></script>
+  </body>
+</html>
