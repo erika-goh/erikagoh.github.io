@@ -1034,6 +1034,46 @@ section {
   color: var(--text-3);
   margin-left: 0.85rem;
 }
+/* Project card with multiple links (writeup + github, etc.) */
+.project.has-links {
+  cursor: default;
+}
+.project.has-links .project-media,
+.project.has-links a.project-title {
+  cursor: pointer;
+}
+.project-links {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1.1rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--line);
+}
+.project-links a {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition:
+    color 0.25s ease,
+    transform 0.25s ease;
+}
+.project-links a:hover {
+  color: var(--accent);
+  transform: translateX(2px);
+}
+.project-links a::after {
+  content: "↗";
+  color: var(--text-3);
+  transition: color 0.25s ease;
+}
+.project-links a:hover::after {
+  color: var(--accent);
+}
 
 /* ═══ WRITING - editorial list of tab-cards ═══ */
 .writing-list {
