@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AlgoSafe Optimizer — fraud detection demo · Erika Goh</title>
+<meta charset="UTF-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:#080a0e; --card:#0c0f14; --panel:#0f131a; --panel2:#141922;
+    --line1:rgba(120,150,200,0.10); --line2:rgba(120,150,200,0.16);
+    --ink:#eef1f5; --ink2:#aab2be; --muted:#5f6875;
+    --blue:#4f84c4; --blue-soft:#7aa7dc; --blue-fill:#3f6fa8; --blue-dim:#22344c;
+    --alert:#d06a63; --alert-dim:#2e1f1e;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --sans:'Inter',system-ui,sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { min-height:100vh; font-family:var(--sans); color:var(--ink); background:var(--bg); }
+  .card {
+    position:relative; width:100%; height:100%; overflow:hidden;
+    background:
+      radial-gradient(ellipse 70% 50% at 85% 0%, rgba(63,111,168,0.10), transparent 60%),
+      radial-gradient(ellipse 60% 60% at 5% 100%, rgba(63,111,168,0.06), transparent 55%),
+      var(--card);
+    padding:44px 52px;
+    display:flex; flex-direction:column;
+  }
+  .net { position:absolute; inset:0; z-index:0; opacity:0.6; }
+  .layer { position:relative; z-index:1; display:flex; flex-direction:column; height:100%; }
+
+  /* header */
+  .hdr { display:flex; align-items:center; justify-content:space-between; }
+  .hdr-l { display:flex; align-items:center; gap:11px; font-family:var(--mono); font-size:14px; font-weight:500; letter-spacing:.02em; }
+  .hdr-l .dot { width:9px; height:9px; border-radius:50%; background:var(--blue); box-shadow:0 0 10px rgba(79,132,196,0.8); }
+  .hdr-r { font-family:var(--mono); font-size:12px; letter-spacing:.14em; color:var(--muted); text-transform:uppercase; }
+
+  .eyebrow { font-family:var(--mono); font-size:12px; letter-spacing:.22em; color:var(--blue-soft); text-transform:uppercase; margin-top:26px; display:flex; align-items:center; gap:12px; }
+  .eyebrow::before { content:""; width:22px; height:1px; background:var(--blue); }
+  h1 { font-size:33px; font-weight:600; letter-spacing:-.015em; line-height:1.18; margin-top:14px; }
+  h1 .dim { color:var(--ink2); font-weight:500; }
+
+  /* panels */
+  .panel { border:1px solid var(--line1); border-radius:12px; background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0)); }
+  .p-top { display:flex; align-items:center; justify-content:space-between; padding:13px 18px; border-bottom:1px solid var(--line1); }
+  .p-top .t { font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink2); }
+  .p-top .m { font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; color:var(--muted); }
+
+  .hero { margin-top:22px; }
+  .hero-body { display:flex; align-items:center; gap:20px; padding:18px 22px; }
+  .hero-body svg { flex:none; }
+  .pstats { display:grid; grid-template-columns:1fr 1fr; gap:18px 24px; flex:1; padding-left:8px; }
+  .stat .l { font-family:var(--mono); font-size:10px; letter-spacing:.14em; color:var(--muted); text-transform:uppercase; }
+  .stat .v { font-family:var(--mono); font-size:24px; color:var(--ink); margin-top:6px; letter-spacing:-.01em; }
+  .stat .v.blue { color:var(--blue-soft); }
+  .leg { grid-column:1 / 3; display:flex; gap:20px; font-family:var(--mono); font-size:10px; color:var(--muted); letter-spacing:.06em; }
+  .leg .sw { display:inline-block; width:9px; height:9px; margin-right:6px; vertical-align:middle; }
+
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
+  .pad { padding:16px 18px; }
+
+  /* GA weights */
+  .wt { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+  .wt .nm { width:96px; font-size:12px; color:var(--ink2); }
+  .wt .track { flex:1; height:5px; border-radius:3px; background:var(--panel2); }
+  .wt .track span { display:block; height:100%; border-radius:3px; background:linear-gradient(90deg,var(--blue-fill),var(--blue-soft)); }
+  .wt .val { width:42px; text-align:right; font-family:var(--mono); font-size:12px; color:var(--ink); }
+  .acc { font-size:11.5px; color:var(--muted); margin-top:14px; line-height:1.5; }
+  .acc b { color:var(--ink2); font-weight:600; }
+
+  /* transactions */
+  .txrow { display:grid; grid-template-columns:70px 1fr auto; align-items:center; gap:10px; padding:9px 0; border-top:1px solid var(--line1); font-size:12px; }
+  .txrow:first-of-type { border-top:none; }
+  .txrow .amt { font-family:var(--mono); color:var(--ink); }
+  .txrow .meta { color:var(--muted); font-size:11px; }
+  .tg { font-family:var(--mono); font-size:10px; letter-spacing:.08em; display:inline-flex; align-items:center; gap:6px; }
+  .tg .sq { width:7px; height:7px; }
+  .tg.fraud { color:var(--alert); } .tg.fraud .sq { background:var(--alert); }
+  .tg.legit { color:var(--ink2); } .tg.legit .sq { background:var(--blue); }
+
+  /* footer */
+  .foot { display:flex; align-items:center; justify-content:space-between; margin-top:16px; padding-top:16px; border-top:1px solid var(--line1); font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; }
+  .foot .live { color:var(--ink2); }
+  .foot .live b { color:var(--ink); }
+  .foot .flag { color:var(--alert); }
+  .foot .flag .sq { display:inline-block; width:8px; height:8px; background:var(--alert); margin-right:8px; vertical-align:middle; }
+  .foot .ver { color:var(--muted); letter-spacing:.14em; }
+  svg text { font-family:var(--mono); }
+
+  .demo-bar { height:46px; display:flex; align-items:center; padding:0 16px; background:#080a0e; }
+  .backlink { display:inline-flex; align-items:center; gap:7px; font-family:'IBM Plex Mono',ui-monospace,monospace; font-size:12px; letter-spacing:.04em; color:#aab2be; background:#0f131a; border:1px solid rgba(120,150,200,0.14); padding:8px 13px; text-decoration:none; }
+  .backlink:hover { color:#eef1f5; }
+  .viewport { overflow:hidden; }
+  .stage { width:1600px; height:1000px; transform-origin:top left; position:relative; }
+</style>
+</head>
+<body>
+  <div class="demo-bar"><a class="backlink" href="projects.html">← Erika Goh · projects</a></div>
+  <div class="viewport"><div class="stage">
+  <div class="card">
+    <!-- constellation -->
+    <svg class="net" viewBox="0 0 1600 1000" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <g stroke="rgba(120,150,200,0.14)" stroke-width="1">
+        <line x1="120" y1="120" x2="300" y2="60"/><line x1="300" y1="60" x2="440" y2="180"/>
+        <line x1="1500" y1="140" x2="1360" y2="60"/><line x1="1360" y1="60" x2="1220" y2="170"/>
+        <line x1="1500" y1="140" x2="1440" y2="300"/><line x1="120" y1="900" x2="260" y2="820"/>
+        <line x1="260" y1="820" x2="180" y2="680"/><line x1="1400" y1="880" x2="1520" y2="760"/>
+        <line x1="1400" y1="880" x2="1280" y2="940"/>
+      </g>
+      <g fill="rgba(140,170,210,0.28)">
+        <circle cx="120" cy="120" r="2.5"/><circle cx="300" cy="60" r="2"/><circle cx="440" cy="180" r="2"/>
+        <circle cx="1500" cy="140" r="2.5"/><circle cx="1360" cy="60" r="2"/><circle cx="1220" cy="170" r="2"/>
+        <circle cx="1440" cy="300" r="2"/><circle cx="120" cy="900" r="2"/><circle cx="260" cy="820" r="2.5"/>
+        <circle cx="180" cy="680" r="2"/><circle cx="1400" cy="880" r="2.5"/><circle cx="1520" cy="760" r="2"/>
+        <circle cx="1280" cy="940" r="2"/>
+      </g>
+    </svg>
+
+    <div class="layer">
+      <!-- header -->
+      <div class="hdr">
+        <div class="hdr-l"><span class="dot"></span>AlgoSafe Optimizer</div>
+        <div class="hdr-r">Python · GA + PSO · 5-node network</div>
+      </div>
+
+      <div class="eyebrow">04 .optimize()</div>
+      <h1>Real-time fraud detection <span class="dim">&amp;</span> secure<br />transaction routing on live payments</h1>
+
+      <!-- hero: PSO network -->
+      <div class="panel hero">
+        <div class="p-top"><span class="t">Secure Routing · Particle Swarm Optimization</span><span class="m">swarm 10 · 30 iters</span></div>
+        <div class="hero-body">
+          <svg width="560" height="300" viewBox="0 0 560 300">
+            <g stroke="rgba(120,150,200,0.22)" stroke-width="2">
+              <line x1="70" y1="220" x2="190" y2="72"/><line x1="70" y1="220" x2="300" y2="238"/>
+              <line x1="190" y1="72" x2="410" y2="92"/><line x1="300" y1="238" x2="410" y2="92"/>
+              <line x1="190" y1="72" x2="500" y2="200"/><line x1="300" y1="238" x2="500" y2="200"/>
+              <line x1="410" y1="92" x2="500" y2="200"/>
+            </g>
+            <path d="M70,220 L300,238 L500,200" fill="none" stroke="#4f84c4" stroke-width="4" stroke-linecap="round"/>
+            <g font-size="19" font-weight="600" text-anchor="middle">
+              <rect x="48" y="198" width="44" height="44" rx="6" fill="#3a4048"/><text x="70" y="227" fill="#eef1f5">0</text>
+              <rect x="168" y="50" width="44" height="44" rx="6" fill="#d06a63"/><text x="190" y="79" fill="#fff">1</text>
+              <rect x="278" y="216" width="44" height="44" rx="6" fill="#464d57"/><text x="300" y="245" fill="#eef1f5">2</text>
+              <rect x="388" y="70" width="44" height="44" rx="6" fill="#414851"/><text x="410" y="99" fill="#eef1f5">3</text>
+              <rect x="476" y="176" width="48" height="48" rx="6" fill="#3f6fa8" stroke="#7aa7dc" stroke-width="2.5"/><text x="500" y="206" fill="#fff">4</text>
+            </g>
+            <g font-size="13" fill="#5f6875" text-anchor="middle">
+              <text x="70" y="264">risk .37</text><text x="190" y="38" >.95</text><text x="300" y="280">.73</text><text x="410" y="56">.60</text><text x="500" y="246">.16 ✓</text>
+            </g>
+          </svg>
+          <div class="pstats">
+            <div class="stat"><div class="l">Risk reduction</div><div class="v blue">−64.5%</div></div>
+            <div class="stat"><div class="l">Safest route</div><div class="v">0 → 4</div></div>
+            <div class="stat"><div class="l">Min risk · from 2.81</div><div class="v">1.00</div></div>
+            <div class="stat"><div class="l">Iterations</div><div class="v">30</div></div>
+            <div class="leg"><span><span class="sw" style="background:#3f6fa8"></span>safest node</span><span><span class="sw" style="background:#d06a63"></span>highest risk</span><span><span class="sw" style="background:#4f84c4"></span>optimized route</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- row: GA + transactions -->
+      <div class="row2">
+        <div class="panel">
+          <div class="p-top"><span class="t">Fraud Rule · Genetic Algorithm</span><span class="m">pop 20 · 50 gens</span></div>
+          <div class="pad">
+            <div class="wt"><span class="nm">Amount</span><span class="track"><span style="width:18%"></span></span><span class="val">0.75</span></div>
+            <div class="wt"><span class="nm">Location</span><span class="track"><span style="width:96%"></span></span><span class="val">4.05</span></div>
+            <div class="wt"><span class="nm">Time of day</span><span class="track"><span style="width:92%"></span></span><span class="val">3.88</span></div>
+            <div class="acc">Evolved weights flag off-hours + unfamiliar locations. Detection accuracy <b>100% · 5 / 5</b> labelled transactions.</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="p-top"><span class="t">Scored Transactions</span><span class="m">threshold 1.5</span></div>
+          <div class="pad">
+            <div class="txrow"><span class="amt">$1,000</span><span class="meta">abroad · 02:00 · unknown</span><span class="tg fraud"><span class="sq"></span>FRAUD</span></div>
+            <div class="txrow"><span class="amt">$1,500</span><span class="meta">home · 23:00 · unknown</span><span class="tg fraud"><span class="sq"></span>FRAUD</span></div>
+            <div class="txrow"><span class="amt">$500</span><span class="meta">abroad · 15:00 · family</span><span class="tg legit"><span class="sq"></span>LEGIT</span></div>
+            <div class="txrow"><span class="amt">$200</span><span class="meta">work · 09:00 · vendor</span><span class="tg legit"><span class="sq"></span>LEGIT</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- footer -->
+      <div class="foot">
+        <div class="live">LIVE · <b>$1,200 · abroad · 03:00 · unknown</b> &nbsp;→&nbsp; <span class="flag"><span class="sq"></span>HIGH RISK — reroute via secure path</span></div>
+        <div class="ver">ALGOSAFE v0.1</div>
+      </div>
+    </div>
+  </div>
+  </div></div>
+  <script>function fit(){var vw=document.documentElement.clientWidth;var s=Math.min(1,vw/1600);var st=document.querySelector('.stage');st.style.transform='translateX('+((vw-1600*s)/2)+'px) scale('+s+')';document.querySelector('.viewport').style.height=(1000*s)+'px';}window.addEventListener('resize',fit);fit();</script>
+</body>
+</html>

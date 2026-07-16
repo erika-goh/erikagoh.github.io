@@ -7,7 +7,7 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <meta name="theme-color" content="#050505" />
-    <title>Article Title Placeholder — Erika Goh</title>
+    <title>How well do LLMs write GPU kernels for Apple Silicon? — Erika Goh</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -15,6 +15,26 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* Article-only tweaks so inline SVG figures sit cleanly on the dark theme */
+      .article-body figure {
+        margin: 2rem 0;
+        max-width: 760px;
+      }
+      .article-body figure svg {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .article-body figcaption {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-3);
+        margin-top: 0.6rem;
+      }
+    </style>
   </head>
   <body>
     <canvas id="treeCanvas" aria-hidden="true"></canvas>
@@ -24,26 +44,14 @@
         <aside class="article-toc" aria-label="Contents">
           <div class="article-toc-label">contents</div>
           <ul class="article-toc-list">
-            <li>
-              <a href="#overview" data-target="overview">overview</a>
-            </li>
-            <li>
-              <a href="#background" data-target="background">background</a>
-            </li>
-            <li>
-              <a href="#approach" data-target="approach">approach</a>
-            </li>
-            <li>
-              <a href="#implementation" data-target="implementation"
-                >implementation</a
-              >
-            </li>
-            <li>
-              <a href="#results" data-target="results">results</a>
-            </li>
-            <li>
-              <a href="#takeaways" data-target="takeaways">takeaways</a>
-            </li>
+            <li><a href="#overview" data-target="overview">why i built this</a></li>
+            <li><a href="#writing-metal" data-target="writing-metal">writing metal</a></li>
+            <li><a href="#benchmark" data-target="benchmark">the benchmark</a></li>
+            <li><a href="#cliff" data-target="cliff">the T1→T2 cliff</a></li>
+            <li><a href="#speed-gap" data-target="speed-gap">anatomy of the gap</a></li>
+            <li><a href="#repair" data-target="repair">repair@5</a></li>
+            <li><a href="#phase-6" data-target="phase-6">phase 6: training</a></li>
+            <li><a href="#caveats" data-target="caveats">caveats &amp; links</a></li>
           </ul>
         </aside>
 
@@ -53,74 +61,696 @@
             <span>Writing</span>
           </a>
 
-          <h1 class="article-title">Article Title Placeholder</h1>
+          <h1 class="article-title">
+            How well do LLMs write GPU kernels for Apple Silicon?
+          </h1>
           <p class="article-subtitle">
-            Short subtitle that hooks the reader — swap for your real
-            summary.
+            A benchmark, three months of measurements, and one small fine-tune
+            still running on a Kaggle P100 as of this writing.
           </p>
           <div class="article-meta">
             <span>Erika Goh</span>
             <span>Jul 2026</span>
-            <span>6 min read</span>
+            <span>12 min read</span>
           </div>
           <hr class="article-divider" />
 
-          <h2 id="overview">Overview</h2>
+          <h2 id="overview">Why I built this</h2>
           <p>
-            Replace this with the opening of your article — the frame,
-            problem, or premise. Keep it short and specific. State the claim
-            you're going to defend or the finding you're going to share.
+            So the thing about GPU programming is that CUDA has been the default
+            for fifteen years. If I ask a frontier LLM to write me a fast matmul,
+            what comes back is CUDA — not because I asked for it, but because
+            NVIDIA's toolchain is the water these models swim in. Everything on
+            the public internet that touches "GPU kernel" has
+            <code>__global__</code> in it somewhere.
           </p>
           <p>
-            A second paragraph can extend the setup with the smallest amount
-            of context a reader needs to understand what comes next.
+            But CUDA is NVIDIA-only. My Mac runs Apple Silicon, which uses Metal
+            — a related-but-not-identical GPU programming model with its own
+            shading language (MSL, the Metal Shading Language). Apple's own
+            libraries — MPS, Core ML, PyTorch's MPS backend — all dispatch Metal
+            under the hood.
           </p>
-
-          <h2 id="background">Background</h2>
           <p>
-            Use this section for the shortest useful version of what came
-            before — prior work, existing patterns, or the state of the tool
-            you're going to change.
+            For my own learning, I wanted to know: how well do LLMs actually
+            generalize from CUDA to Metal? Not "can they emit Metal syntax" —
+            they can, if you ask nicely — but "when the Metal answer
+            <em>diverges</em> from the CUDA answer, do they cross the gap
+            correctly?"
           </p>
-
-          <h2 id="approach">Approach</h2>
           <p>
-            Describe your approach at a high level here. What did you
-            change, and why did you expect it to work? A single mechanism
-            explained clearly beats three mentioned in passing.
+            That question turned into <strong>MSL-Bench</strong>. It's 60
+            numerical operations, judged end-to-end: the LLM writes MSL, my
+            harness compiles it with the real Xcode toolchain, verifies it
+            against a PyTorch MPS reference, and times it with GPU timestamps.
+            The number that comes out is <code>fast_p</code> — the fraction of
+            problems where the model produced a kernel that (a) compiles, (b)
+            matches the reference numerically, and (c) runs at least
+            <code>p×</code> the MPS reference speed. <code>fast_0</code> is
+            "correct," <code>fast_1</code> is "as fast as Apple's own kernel,"
+            <code>fast_2</code> is "twice as fast."
           </p>
           <blockquote>
-            A pull-quote or callout works well here to break up dense
-            paragraphs and highlight a claim.
+            If you only remember one thing from this: every model I tested
+            nails elementwise operations and falls off a cliff the moment the
+            problem requires threadgroup-level coordination. The height of the
+            cliff varies. The cliff itself is universal.
           </blockquote>
-
-          <h2 id="implementation">Implementation</h2>
           <p>
-            The mechanics: what you built, in enough detail that another
-            engineer could reason about it. Inline <code>code</code> and
-            fenced blocks are supported.
+            That's the story. The rest of this is how I got there — and one
+            thing I'm running right now to see if it's fixable.
           </p>
-          <pre><code>function loop() {
-  // sample implementation snippet
-  return result;
-}</code></pre>
 
-          <h2 id="results">Results</h2>
+          <h2 id="writing-metal">What "writing Metal" actually looks like</h2>
           <p>
-            Numbers, benchmarks, or before/after comparisons live here.
-            Prefer honest deltas over hype. If something didn't work, say
-            so.
+            Quick minute on what MSL is and why it isn't just "CUDA with
+            different keywords" — this matters for the whole benchmark. A Metal
+            compute kernel is a function that runs on the GPU across many
+            threads in parallel:
+          </p>
+<pre><code>kernel void vector_add(device float *a [[buffer(0)]],
+                       device float *b [[buffer(1)]],
+                       device float *out [[buffer(2)]],
+                       uint id [[thread_position_in_grid]]) {
+    out[id] = a[id] + b[id];
+}</code></pre>
+          <p>
+            This is a T1 (elementwise) kernel. Buffer bindings, per-thread ID,
+            one line of math. Every model I tested wrote this correctly.
+          </p>
+          <p>CUDA's equivalent, side by side:</p>
+<pre><code>__global__ void vector_add(float *a, float *b, float *out) {
+    int id = blockIdx.x * blockDim.x + threadIdx.x;
+    out[id] = a[id] + b[id];
+}</code></pre>
+          <p>
+            You can see the transfer at once: the shape is identical, the syntax
+            has moved. This is the easy case. The model pattern-matches "thread
+            ID → indexed load → store" and gets it right.
+          </p>
+          <p>
+            The problem shows up the moment threads have to <em>cooperate</em>.
+            Say I want to compute the sum of each row in a 262144×256 matrix. In
+            CUDA:
+          </p>
+<pre><code>__shared__ float scratch[256];
+scratch[threadIdx.x] = x[row * K + threadIdx.x];
+__syncthreads();
+// ... tree reduce ...</code></pre>
+          <p>The Metal version looks almost identical:</p>
+<pre><code>threadgroup float scratch[256];
+scratch[lid] = x[row * K + lid];
+threadgroup_barrier(mem_flags::mem_threadgroup);
+// ... tree reduce ...</code></pre>
+          <p>
+            Notice <code>threadgroup_barrier(mem_flags::mem_threadgroup)</code>.
+            CUDA's <code>__syncthreads()</code> has no arguments. Metal's
+            barrier takes a <strong>memory scope flag</strong> —
+            <code>mem_threadgroup</code>, <code>mem_device</code>,
+            <code>mem_texture</code>, or an OR of them — because Metal's memory
+            model is more explicit about which pool of memory is being fenced.
+            Pick the wrong flag and your kernel still compiles, still runs,
+            still produces correct output — and pays a measurable perf cost on
+            every reduction step. I'll come back to this exact bug; it's costing
+            7% on <code>p101_row_sum</code> in the wild.
+          </p>
+          <p>
+            This is the kind of thing that separates "I've seen Metal syntax"
+            from "I've written Metal." And it turns out to be surprisingly hard
+            for LLMs to just infer.
+          </p>
+
+          <h2 id="benchmark">The benchmark itself</h2>
+          <p>MSL-Bench has 60 problems in four tiers:</p>
+
+          <figure>
+            <svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tier taxonomy diagram: T1 elementwise, T2 reductions, T3 tiled, T4 fused">
+              <style>
+                .tier-card { fill: rgba(255,255,255,0.03); stroke: rgba(255,255,255,0.16); stroke-width: 1; }
+                .tier-t1 { fill: rgba(64,121,20,0.10); }
+                .tier-t2 { fill: rgba(64,121,20,0.22); }
+                .tier-t3 { fill: rgba(64,121,20,0.40); }
+                .tier-t4 { fill: rgba(64,121,20,0.62); }
+                .tier-label { font: 600 15px 'Inter', -apple-system, sans-serif; fill: #ededed; }
+                .tier-ex { font: 400 12px 'JetBrains Mono', ui-monospace, monospace; fill: #d0d0d0; }
+                .tier-note { font: 400 12px 'Inter', -apple-system, sans-serif; fill: #a1a1a1; }
+                .head { font: 700 12px 'JetBrains Mono', ui-monospace, monospace; fill: #ededed; letter-spacing: 0.06em; text-transform: uppercase; }
+              </style>
+              <text x="20" y="22" class="head">TIER</text>
+              <text x="130" y="22" class="head">EXAMPLE OPERATIONS</text>
+              <text x="450" y="22" class="head">MSL-SPECIFIC KNOWLEDGE REQUIRED</text>
+
+              <rect x="20" y="40" width="90" height="60" rx="4" class="tier-card tier-t1" />
+              <text x="35" y="65" class="tier-label">T1</text>
+              <text x="35" y="85" class="tier-note">elementwise</text>
+              <text x="130" y="65" class="tier-ex">vector_add, relu, sigmoid, tanh,</text>
+              <text x="130" y="82" class="tier-ex">gelu, abs, clamp, exp, ...</text>
+              <text x="450" y="75" class="tier-note">≈ none — C-math translation</text>
+
+              <rect x="20" y="110" width="90" height="60" rx="4" class="tier-card tier-t2" />
+              <text x="35" y="135" class="tier-label">T2</text>
+              <text x="35" y="155" class="tier-note">reductions</text>
+              <text x="130" y="135" class="tier-ex">row_sum, row_max, softmax,</text>
+              <text x="130" y="152" class="tier-ex">row_argmax, col_reduce, ...</text>
+              <text x="450" y="137" class="tier-note">threadgroup memory + barriers,</text>
+              <text x="450" y="153" class="tier-note">optionally simd_shuffle_down</text>
+
+              <rect x="20" y="180" width="90" height="60" rx="4" class="tier-card tier-t3" />
+              <text x="35" y="205" class="tier-label">T3</text>
+              <text x="35" y="225" class="tier-note">tiled</text>
+              <text x="130" y="205" class="tier-ex">matmul, matmul_tiled, conv1d,</text>
+              <text x="130" y="222" class="tier-ex">conv2d, transpose_tiled, sgemv</text>
+              <text x="450" y="207" class="tier-note">cooperative tile loads, halo,</text>
+              <text x="450" y="223" class="tier-note">index-flattening math</text>
+
+              <rect x="20" y="250" width="90" height="60" rx="4" class="tier-card tier-t4" />
+              <text x="35" y="275" class="tier-label">T4</text>
+              <text x="35" y="295" class="tier-note">fused</text>
+              <text x="130" y="275" class="tier-ex">layernorm, rmsnorm, swiglu,</text>
+              <text x="130" y="292" class="tier-ex">causal_attention, fused_matmul_relu</text>
+              <text x="450" y="277" class="tier-note">T2 + T3 combined, plus in-register</text>
+              <text x="450" y="293" class="tier-note">accumulation + dispatch-overhead awareness</text>
+            </svg>
+            <figcaption>Fig 1 — tier taxonomy. Difficulty rises with how much MSL-specific knowledge the kernel forces the model to use.</figcaption>
+          </figure>
+
+          <p>
+            The tiering isn't just difficulty — it's calibrated around
+            <strong>what MSL-specific patterns each problem forces the model to
+            use.</strong> T1 problems could be written in almost any C-like GPU
+            language. T2+ problems specifically require Metal idioms that don't
+            map 1:1 from CUDA. That's a deliberate choice: the benchmark is
+            measuring <em>transfer competence</em>, not algorithm discovery.
+          </p>
+          <p>Every candidate kernel goes through the same pipeline:</p>
+          <ol>
+            <li>
+              <strong>Compile</strong> — write the MSL to disk, invoke
+              <code>xcrun metal</code> → <code>.metallib</code>. If it fails,
+              capture the compiler diagnostic verbatim (that diagnostic gets
+              fed back to the model on the next repair attempt).
+            </li>
+            <li>
+              <strong>Execute</strong> — a small Swift runner binds input
+              buffers, dispatches with the grid shape the spec requires, and
+              reads GPU timestamps off the command buffer.
+            </li>
+            <li>
+              <strong>Verify</strong> — output tensors are
+              <code>allclose</code>'d against a PyTorch MPS reference. NaN/Inf
+              is an automatic fail; per-problem tolerances are set to what
+              MPS-vs-double differs by.
+            </li>
+            <li>
+              <strong>Time</strong> — 3 warmup runs, then median of 10 timed
+              runs. Runs with IQR &gt; 15% of median are flagged as thermally
+              noisy.
+            </li>
+          </ol>
+          <p>
+            The whole thing runs on the Mac I already own. Free-tier LLM APIs
+            (Groq, Gemini) plus optional local Ollama mean I can run a full
+            sweep without paying a cent.
+          </p>
+
+          <h2 id="cliff">The T1 → T2 cliff</h2>
+          <p>Here's the headline. One-shot sweeps on four models:</p>
+
+          <figure>
+            <svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bar chart: fast_0 correctness by tier for five models. Every model drops sharply between T1 and T2.">
+              <style>
+                .axis { stroke: rgba(255,255,255,0.35); stroke-width: 1; }
+                .tick { stroke: rgba(255,255,255,0.1); stroke-width: 1; }
+                .tick-lab { font: 400 11px 'JetBrains Mono', ui-monospace, monospace; fill: #a1a1a1; }
+                .tier-lab { font: 600 12px 'Inter', -apple-system, sans-serif; fill: #ededed; }
+                .m1 { fill: #407914; }
+                .m2 { fill: #6a9c2e; }
+                .m3 { fill: #a5c66f; }
+                .m4 { fill: #c9dea3; }
+                .m5 { fill: #d94a4a; }
+                .lg { font: 500 11px 'Inter', -apple-system, sans-serif; fill: #d0d0d0; }
+                .val { font: 500 10px 'JetBrains Mono', ui-monospace, monospace; fill: #ededed; }
+                .title { font: 600 13px 'Inter', -apple-system, sans-serif; fill: #ededed; }
+              </style>
+              <text x="20" y="18" class="title">Correctness (fast_0, %) by tier and model</text>
+              <line x1="60" y1="290" x2="700" y2="290" class="axis" />
+              <line x1="60" y1="40" x2="60" y2="290" class="axis" />
+              <line x1="60" y1="240" x2="700" y2="240" class="tick" stroke-dasharray="2 3" />
+              <line x1="60" y1="190" x2="700" y2="190" class="tick" stroke-dasharray="2 3" />
+              <line x1="60" y1="140" x2="700" y2="140" class="tick" stroke-dasharray="2 3" />
+              <line x1="60" y1="90"  x2="700" y2="90"  class="tick" stroke-dasharray="2 3" />
+              <text x="30" y="293" class="tick-lab">0</text>
+              <text x="30" y="243" class="tick-lab">25</text>
+              <text x="30" y="193" class="tick-lab">50</text>
+              <text x="30" y="143" class="tick-lab">75</text>
+              <text x="30" y="93"  class="tick-lab">100</text>
+
+              <text x="130" y="308" class="tier-lab" text-anchor="middle">T1 elementwise</text>
+              <rect x="72"  y="103" width="20" height="187" class="m1" /><text x="82"  y="99" class="val" text-anchor="middle">93</text>
+              <rect x="94"  y="90"  width="20" height="200" class="m2" /><text x="104" y="86" class="val" text-anchor="middle">100</text>
+              <rect x="116" y="90"  width="20" height="200" class="m3" /><text x="126" y="86" class="val" text-anchor="middle">100</text>
+              <rect x="138" y="117" width="20" height="173" class="m4" /><text x="148" y="113" class="val" text-anchor="middle">87</text>
+              <rect x="160" y="250" width="20" height="40"  class="m5" /><text x="170" y="246" class="val" text-anchor="middle">20</text>
+
+              <text x="290" y="308" class="tier-lab" text-anchor="middle">T2 reductions</text>
+              <rect x="232" y="196" width="20" height="94" class="m1" /><text x="242" y="192" class="val" text-anchor="middle">47</text>
+              <rect x="254" y="228" width="20" height="62" class="m2" /><text x="264" y="224" class="val" text-anchor="middle">31</text>
+              <rect x="276" y="277" width="20" height="13" class="m3" /><text x="286" y="273" class="val" text-anchor="middle">7</text>
+              <rect x="298" y="262" width="20" height="28" class="m4" /><text x="308" y="258" class="val" text-anchor="middle">14</text>
+              <rect x="320" y="290" width="20" height="0"  class="m5" /><text x="330" y="286" class="val" text-anchor="middle">0</text>
+
+              <text x="450" y="308" class="tier-lab" text-anchor="middle">T3 tiled</text>
+              <rect x="392" y="250" width="20" height="40" class="m1" /><text x="402" y="246" class="val" text-anchor="middle">20</text>
+              <rect x="414" y="290" width="20" height="0"  class="m2" /><text x="424" y="286" class="val" text-anchor="middle">0</text>
+              <rect x="436" y="290" width="20" height="0"  class="m3" /><text x="446" y="286" class="val" text-anchor="middle">0</text>
+              <rect x="480" y="277" width="20" height="13" class="m5" /><text x="490" y="273" class="val" text-anchor="middle">7</text>
+
+              <text x="610" y="308" class="tier-lab" text-anchor="middle">T4 fused</text>
+              <rect x="552" y="250" width="20" height="40" class="m1" /><text x="562" y="246" class="val" text-anchor="middle">20</text>
+              <rect x="574" y="290" width="20" height="0"  class="m2" /><text x="584" y="286" class="val" text-anchor="middle">0</text>
+              <rect x="596" y="277" width="20" height="13" class="m3" /><text x="606" y="273" class="val" text-anchor="middle">7</text>
+              <rect x="640" y="277" width="20" height="13" class="m5" /><text x="650" y="273" class="val" text-anchor="middle">7</text>
+
+              <rect x="72" y="330" width="10" height="10" class="m1" /><text x="88" y="339" class="lg">gpt-oss-120b</text>
+              <rect x="180" y="330" width="10" height="10" class="m2" /><text x="196" y="339" class="lg">llama-3.3-70b</text>
+              <rect x="290" y="330" width="10" height="10" class="m3" /><text x="306" y="339" class="lg">llama-3.1-8b</text>
+              <rect x="400" y="330" width="10" height="10" class="m4" /><text x="416" y="339" class="lg">gemini-2.5-flash</text>
+              <rect x="530" y="330" width="10" height="10" class="m5" /><text x="546" y="339" class="lg">qwen3-32b (reasoning)</text>
+            </svg>
+            <figcaption>Fig 2 — fast_0 correctness by tier, per model. The universal cliff at T1→T2.</figcaption>
+          </figure>
+
+          <p>Three things pop out.</p>
+          <p>
+            <strong>Metal elementwise fits in an 8B model.</strong> Both 8B and
+            70B Llamas hit 100% on T1. Whatever an LLM needs to know about MSL
+            to write <code>out[i] = f(x[i])</code> is compact enough that the
+            small model already has it. The bigger model's edge starts at T2 —
+            that's where MSL-specific patterns begin to matter.
+          </p>
+          <p>
+            <strong>The cliff is universal but variable-height.</strong> Every
+            non-reasoning model drops sharply between T1 and T2. Llama-3.1-8b
+            drops 93 points; Gemini drops 72; gpt-oss-120b — the strongest
+            model in my set — still drops 46. This isn't any single provider
+            getting Metal "wrong." It's the domain: T1 is a C-math translation,
+            T2 requires knowing Apple's specific memory model.
+          </p>
+          <p>
+            <strong>Reasoning models have an inverted profile.</strong>
+            qwen3-32b is the only model in my set that failed T1 — 3 out of 15.
+            Its dominant failure mode was using
+            <code>thread_position_in_grid</code> as a <em>free variable</em>
+            (CUDA-style) instead of a <em>parameter attribute</em>. Reading its
+            <code>&lt;think&gt;</code> blocks, you can watch it derive the
+            wrong syntax from adjacent-language knowledge. But qwen3 is also the
+            only model that got any T3 problem correct. Reasoning appears to
+            <em>hurt</em> on syntax-shape problems and <em>help</em> on
+            algorithm-shape problems — even while being dramatically worse
+            overall.
+          </p>
+          <p>
+            So I ran a follow-up specifically to test this. If truncated
+            <code>&lt;think&gt;</code> was the bottleneck (a plausible
+            hypothesis — reasoning tokens compete with kernel-emit tokens under
+            a shared <code>max_tokens=4096</code> budget), correctness should
+            improve when I gave the model more room. I bumped
+            <code>max_tokens</code> from 4096 to 5200, the ceiling under Groq's
+            free-tier per-minute cap for qwen3.
+          </p>
+          <p>
+            It got <em>worse</em>. Zero confirmed correct at mt=5200 vs 5
+            correct at mt=4096. And I could see the mechanism at kernel level.
+            On <code>p003_elementwise_mul</code>, mt=4096 wrote:
+          </p>
+<pre><code>uint id [[thread_position_in_grid]]     // verifies correct</code></pre>
+          <p>
+            mt=5200, on the same problem with ~1100 more reasoning tokens,
+            wrote:
+          </p>
+<pre><code>uint id [[thread_index_in_grid]]        // compile fail</code></pre>
+          <p>
+            <code>thread_index_in_grid</code> is not a real MSL attribute.
+            qwen3, given more reasoning budget, <em>derived itself off a
+            correct answer</em>. Extra tokens didn't buy access to the right
+            pattern; they bought more elaborate wrong derivations from adjacent
+            languages. This is the clearest evidence I've seen personally for
+            "reasoning can hurt when the answer is memorized syntax."
+          </p>
+
+          <h2 id="speed-gap">Anatomy of the LLM-vs-MPS speed gap</h2>
+          <p>
+            Getting a T2 kernel correct isn't the same as getting it fast. On
+            <code>p101_row_sum</code>, Groq's llama-3.3-70b wrote a kernel that
+            verified correctly, then ran at 0.42× MPS speed. It compiled, it
+            ran, it did the right thing — and it was 2.4× slower than Apple's
+            own kernel doing the same job.
+          </p>
+          <p>
+            So I hand-patched that kernel four ways to figure out where the gap
+            actually lives. The problem is memory-bound (input is 268 MB), so
+            effective bandwidth is the honest number:
+          </p>
+
+          <figure>
+            <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bandwidth ladder: Groq original 74.8 GB/s, patched 80.9, hand-tuned SIMD 88.7, float4 90.5, MPS reference 175 GB/s">
+              <style>
+                .row-lab { font: 500 12px 'Inter', -apple-system, sans-serif; fill: #ededed; }
+                .val-lab { font: 500 12px 'JetBrains Mono', ui-monospace, monospace; fill: #ededed; }
+                .bar { fill: #407914; }
+                .bar-mps { fill: rgba(255,255,255,0.25); }
+                .axis-lab { font: 400 11px 'JetBrains Mono', ui-monospace, monospace; fill: #a1a1a1; }
+                .title { font: 600 13px 'Inter', -apple-system, sans-serif; fill: #ededed; }
+                .delta { font: 400 11px 'Inter', -apple-system, sans-serif; fill: #a1a1a1; }
+              </style>
+              <text x="20" y="22" class="title">p101_row_sum · effective memory bandwidth (GB/s)</text>
+
+              <text x="20" y="60" class="row-lab">Groq original (mem_device flag)</text>
+              <rect x="260" y="46" width="171" height="18" class="bar" />
+              <text x="440" y="60" class="val-lab">74.8</text>
+
+              <text x="20" y="90" class="row-lab">Groq patched (mem_threadgroup)</text>
+              <rect x="260" y="76" width="185" height="18" class="bar" />
+              <text x="454" y="90" class="val-lab">80.9</text>
+              <text x="490" y="90" class="delta">+7% (layer 1)</text>
+
+              <text x="20" y="120" class="row-lab">Hand-tuned SIMD-group reduce</text>
+              <rect x="260" y="106" width="203" height="18" class="bar" />
+              <text x="472" y="120" class="val-lab">88.7</text>
+              <text x="510" y="120" class="delta">+8% (layer 2)</text>
+
+              <text x="20" y="150" class="row-lab">Hand-tuned float4 loads</text>
+              <rect x="260" y="136" width="207" height="18" class="bar" />
+              <text x="476" y="150" class="val-lab">90.5</text>
+              <text x="510" y="150" class="delta">~0% (already coalesced)</text>
+
+              <text x="20" y="180" class="row-lab">MPS reference</text>
+              <rect x="260" y="166" width="400" height="18" class="bar-mps" />
+              <text x="669" y="180" class="val-lab">175</text>
+              <text x="500" y="180" class="delta">the ceiling I can't reach</text>
+
+              <text x="460" y="230" class="axis-lab" text-anchor="middle">0 ────────── GB/s ────────── ~175</text>
+            </svg>
+            <figcaption>Fig 3 — bandwidth ladder on p101_row_sum. Four candidate kernels vs Apple's MPS reference.</figcaption>
+          </figure>
+
+          <p>Three layers of cost, each measured:</p>
+          <p>
+            <strong>Layer 1 — Barrier-flag confusion (~7%).</strong> Groq wrote
+            <code>threadgroup_barrier(mem_flags::mem_device)</code> when the
+            reduction only touches threadgroup memory. Apple's compiler
+            partially elides the redundant device-scope fence, but not
+            entirely. This is the exact CUDA→MSL transfer failure I flagged at
+            the start: <code>__syncthreads()</code> has no flag parameter, so
+            the model doesn't know a flag is load-bearing.
+          </p>
+          <p>
+            <strong>Layer 2 — Missing MSL idioms (~8%).</strong> Groq's
+            algorithm was correct-but-generic — a halving-tree reduce over
+            threadgroup memory. Metal has SIMD-group intrinsics
+            (<code>simd_shuffle_down</code>) that let you reduce inside a SIMD
+            group using registers only, no shared memory and no barriers.
+            Rewriting the reduction that way saved another 8%.
+          </p>
+          <p>
+            <strong>Layer 3 — Bandwidth utilization (~50%).</strong> Even my
+            hand-tuned kernel peaks at 90.5 GB/s vs MPS's 175. A
+            <code>float4</code>-load variant made no difference — Apple's
+            memory subsystem already coalesces adjacent scalar loads into
+            cache-line transactions. Transaction count isn't the knob.
+          </p>
+          <p>
+            Layer 3 breaks into two sub-layers, and this is where the benchmark
+            gets honest about itself:
           </p>
           <ul>
-            <li>Metric one: 0 → 42.</li>
-            <li>Metric two: 3.4s → 0.9s.</li>
-            <li>Metric three: qualitative improvement in X.</li>
+            <li>
+              <strong>3a. Model-recoverable (~15% of the total gap).</strong>
+              Small extra micro-optimizations a better kernel-designing LLM
+              could reach for under the spec's constraints.
+            </li>
+            <li>
+              <strong>3b. Baked into the spec's launch config (~35% of the
+              total gap).</strong> The problem spec fixes the launch: one
+              threadgroup per row, 256 threads per group. Under that
+              constraint, ~90 GB/s appears to be the ceiling. MPS isn't bound
+              by the spec — it picks its own launch — and uses that freedom to
+              run at ~2× the throughput.
+            </li>
           </ul>
-
-          <h2 id="takeaways">Takeaways</h2>
           <p>
-            Close with the durable lesson — the one thing you'd tell the
-            past version of yourself. A short conclusion beats a long one.
+            I found this while writing the report, and it means that under the
+            current benchmark design, no candidate kernel can close the last
+            35% of the gap on this problem, however well designed. That's a
+            <em>benchmark artifact</em>, not a model-quality issue. Worth
+            flagging honestly. I'll come back to what to do about it.
+          </p>
+
+          <h2 id="repair">Can repair@5 unstick the T2 wall?</h2>
+          <p>
+            The second thing I wanted to test: if I give the LLM its own
+            compile diagnostics back and let it try again up to 5 times, how
+            much of the T2 wall does it break through?
+          </p>
+          <p>
+            Answer: not much, and in an informative way. On the 17 problems
+            where I could run both <code>one_shot</code> and
+            <code>repair@5</code> before Groq's daily quota killed the sweep,
+            both modes scored 14/17. Repair added <em>zero</em> new correct
+            kernels. What it changed was the <strong>failure mode</strong> on
+            two T2 problems:
+          </p>
+<pre><code>p102_row_max      one_shot: compile-fail  →  repair@5: verify-fail
+p104_row_softmax  one_shot: compile-fail  →  repair@5: verify-fail</code></pre>
+          <p>
+            The compile diagnostics got the model past MSL syntax errors, but
+            5 rounds of "wrong answer, max_abs_err=X" feedback wasn't pointed
+            enough to drive it from wrong-numerically to right-numerically.
+            Mapped onto the layered analysis from the previous section:
+          </p>
+          <ul>
+            <li>
+              <strong>Layer 1 errors</strong> — compile-fails. The compiler
+              <em>tells</em> the model what's wrong. Repair fixes these.
+            </li>
+            <li>
+              <strong>Layer 2 errors</strong> — verify-fails. Code runs,
+              semantics are wrong. Scalar-error feedback can't point at the
+              specific line.
+            </li>
+            <li>
+              <strong>Layer 3 errors</strong> — slow-but-correct. Invisible to
+              both compile and verify signals.
+            </li>
+          </ul>
+          <p>
+            So the ceiling of <code>repair@5</code> with only compile +
+            scalar-correctness signal is "unstick layer-1 errors." Anything
+            past that needs a richer feedback surface — per-element diff
+            previews, shape-mismatch hints, or performance-vs-reference
+            signals. That's a natural direction for a future revision.
+          </p>
+
+          <h2 id="phase-6">
+            Can models learn Metal from their own failures?
+            <em>(training in progress)</em>
+          </h2>
+          <p>
+            Everything above is measurement. What I actually want to know next
+            is whether it's <em>learnable</em> — whether the failure
+            transcripts an LLM produces on MSL-Bench are themselves sufficient
+            training data to make a better MSL-writing LLM.
+          </p>
+          <p>
+            That's Phase 6, and it lives in a sibling repo called
+            <strong>MSL-Flywheel</strong>. For my own learning, I wanted to run
+            the whole loop end to end at least once, on free infrastructure,
+            and see if anything moves.
+          </p>
+
+          <figure>
+            <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Data flywheel: sweep produces transcripts, curated into training pairs, LoRA-tuned on Kaggle, re-benchmarked, delta reported, loop">
+              <style>
+                .step { fill: rgba(255,255,255,0.03); stroke: #407914; stroke-width: 1.5; }
+                .step-title { font: 600 13px 'Inter', -apple-system, sans-serif; fill: #ededed; }
+                .step-sub { font: 400 11px 'Inter', -apple-system, sans-serif; fill: #a1a1a1; }
+                .arr { stroke: #407914; stroke-width: 1.5; fill: none; }
+                .arr-head { fill: #407914; }
+                .loop { stroke: rgba(255,255,255,0.35); stroke-width: 1; stroke-dasharray: 4 4; fill: none; }
+                .loop-lab { font: 400 11px 'Inter', -apple-system, sans-serif; fill: #a1a1a1; }
+                .caption { font: 400 11px 'Inter', -apple-system, sans-serif; fill: #d0d0d0; }
+              </style>
+
+              <rect x="30" y="30" width="180" height="55" rx="8" class="step" />
+              <text x="120" y="52" class="step-title" text-anchor="middle">1. MSL-Bench sweep</text>
+              <text x="120" y="72" class="step-sub" text-anchor="middle">60 problems × N models</text>
+
+              <rect x="270" y="30" width="180" height="55" rx="8" class="step" />
+              <text x="360" y="52" class="step-title" text-anchor="middle">2. Curate transcripts</text>
+              <text x="360" y="72" class="step-sub" text-anchor="middle">→ 46 training pairs (JSONL)</text>
+
+              <rect x="510" y="30" width="180" height="55" rx="8" class="step" />
+              <text x="600" y="52" class="step-title" text-anchor="middle">3. LoRA fine-tune</text>
+              <text x="600" y="72" class="step-sub" text-anchor="middle">Kaggle P100, free tier</text>
+
+              <rect x="510" y="140" width="180" height="55" rx="8" class="step" />
+              <text x="600" y="162" class="step-title" text-anchor="middle">4. Serve via Ollama</text>
+              <text x="600" y="182" class="step-sub" text-anchor="middle">adapter → GGUF → local</text>
+
+              <rect x="270" y="140" width="180" height="55" rx="8" class="step" />
+              <text x="360" y="162" class="step-title" text-anchor="middle">5. Re-benchmark tuned</text>
+              <text x="360" y="182" class="step-sub" text-anchor="middle">same 60 problems</text>
+
+              <rect x="30" y="140" width="180" height="55" rx="8" class="step" />
+              <text x="120" y="162" class="step-title" text-anchor="middle">6. Delta report</text>
+              <text x="120" y="182" class="step-sub" text-anchor="middle">baseline vs tuned, per tier</text>
+
+              <path d="M 210 57 L 265 57" class="arr" />
+              <polygon points="265,57 258,53 258,61" class="arr-head" />
+              <path d="M 450 57 L 505 57" class="arr" />
+              <polygon points="505,57 498,53 498,61" class="arr-head" />
+              <path d="M 600 85 L 600 135" class="arr" />
+              <polygon points="600,135 596,128 604,128" class="arr-head" />
+              <path d="M 510 167 L 455 167" class="arr" />
+              <polygon points="455,167 462,163 462,171" class="arr-head" />
+              <path d="M 270 167 L 215 167" class="arr" />
+              <polygon points="215,167 222,163 222,171" class="arr-head" />
+
+              <path d="M 120 140 Q 120 250 360 250 Q 600 250 600 195" class="loop" />
+              <text x="360" y="272" class="loop-lab" text-anchor="middle">loop — new data enriches the next curation</text>
+              <text x="360" y="305" class="caption" text-anchor="middle">"data flywheel": the LLM's own failure transcripts become its training data</text>
+            </svg>
+            <figcaption>Fig 4 — the MSL-Flywheel loop. Six steps; step 3 is currently on a Kaggle P100 as I write this.</figcaption>
+          </figure>
+
+          <p>
+            The curation step extracts three kinds of training pairs from the
+            raw MSL-Bench transcripts:
+          </p>
+          <ul>
+            <li>
+              <strong>Type A — repair trajectory pairs.</strong> When an
+              attempt failed, feedback was given, and the next attempt
+              succeeded, use the
+              <code>(failed_kernel + compile_error → corrected_kernel)</code>
+              transition as the training example. Highest signal, lowest
+              volume.
+            </li>
+            <li>
+              <strong>Type B — best-model teacher pairs.</strong> For each
+              problem, if any run produced a correct kernel, that kernel
+              becomes the SFT target for training weaker models. Aggregates
+              the suite's cross-model wisdom.
+            </li>
+            <li>
+              <strong>Type C — golden kernel pairs.</strong> Hand-verified
+              reference kernels from <code>tests/golden_kernels/*.metal</code>,
+              paired with their problem prompt.
+            </li>
+          </ul>
+          <p>
+            Current curated dataset (v1) is 46 pairs: 1 Type A, 33 Type B, 12
+            Type C. Small — deliberately. This is the minimum viable dataset
+            to test whether the training loop <em>works at all</em>, not
+            whether it produces a strong model. The tier distribution is
+            inverted from where I want improvement (28 T1, 10 T2, 4 T3, 4 T4 —
+            sparse where models most need help), but that's a chicken-and-egg
+            problem: I can only turn a <em>correct</em> kernel into a training
+            pair, and models rarely produce correct T3/T4 kernels.
+          </p>
+          <p>
+            <strong>Training setup.</strong> LoRA fine-tune of
+            Llama-3.1-8B-Instruct — rank 16 / alpha 32, QLoRA 4-bit NF4,
+            <code>paged_adamw_8bit</code>, LR 2e-4 cosine, 3 epochs.
+            <code>assistant_only_loss=True</code> so the failed-kernel turn in
+            the one Type-A pair doesn't get pulled into the loss (I would
+            rather the model not learn to reproduce the failure before fixing
+            it). Runs on Kaggle's free P100 tier in about 30 minutes.
+          </p>
+          <p>
+            <strong>Why Llama-3.1-8B specifically?</strong> Because I already
+            have a full MSL-Bench baseline for it on Groq — 28.3% fast_0
+            across all 60 problems. The delta from base to fine-tuned is
+            directly measurable using the same 60 problems, same harness,
+            same everything. No re-normalization games.
+          </p>
+          <p>
+            <strong>Serving path.</strong> Adapter downloads from Kaggle, gets
+            converted to GGUF with <code>llama.cpp</code>'s
+            <code>convert_lora_to_gguf.py</code>, and gets registered with a
+            local <code>ollama</code> install via a Modelfile:
+          </p>
+<pre><code>FROM llama3.1:8b-instruct-q4_K_M
+ADAPTER ./adapter-v1.gguf</code></pre>
+          <p>
+            Then a
+            <code>run_suite.py --provider ollama --model llama-3.1-8b-flywheel-v1 --mode one_shot</code>
+            produces a new set of records, and <code>compare.py</code> prints
+            the delta. That last piece is the whole point: does the fine-tune
+            actually move the numbers, and where does it move them?
+          </p>
+          <blockquote>
+            <strong>Results section — pending.</strong> As of 2026-07-16, the
+            Kaggle training run is queued and unblocked (Meta's Llama-3.1-8B
+            license accepted). The delta report will land right here. What
+            I'll be looking for, in order of aspiration: <strong>T1 speedup
+            shifts</strong> (kernels moving from correct-but-slow to
+            correct-and-≥MPS — evidence the model picked up Metal-specific
+            perf idioms); <strong>T2 correctness gains</strong> (+1 to +3
+            correct kernels on this dataset size would be a real result);
+            <strong>T3/T4 movement</strong> (very aspirational — only 8 of 46
+            training pairs are T3+T4). If the delta is zero or negative, that's
+            also a real finding — the 46-pair dataset isn't rich enough, and
+            the next iteration needs more sweeps to enrich the pool.
+          </blockquote>
+
+          <h2 id="caveats">What's next, honest caveats, and links</h2>
+          <p>
+            <strong>The spec-launch cap issue is real.</strong> ~35% of the gap
+            on some memory-bound problems is unreachable by any candidate
+            kernel under the current benchmark design. This is a design
+            decision I need to make deliberately before publishing anything
+            more definitive. Three plausible fixes: let candidates propose
+            launch configs; time against a same-launch reference instead of
+            MPS; or reword the metric honestly as "% of achievable-under-
+            constraint speed." I haven't picked yet.
+          </p>
+          <p>
+            <strong>The roster is narrow.</strong> I only ran full 60-problem
+            sweeps on two Groq-hosted models. Adding Claude, GPT-4, Gemini
+            Pro, and o1 when budget permits would tell me whether the cliff
+            shape holds across the frontier or is a mid-tier phenomenon.
+          </p>
+          <p>
+            <strong>Local Ollama sweep still to be done.</strong>
+            qwen2.5-coder-14b under Ollama had a 6-problem smoke test with
+            0/6 correct, which is not enough data. A full 60-problem local
+            sweep needs sustained GPU load on my laptop and a thermal-safety
+            window I haven't scheduled yet.
+          </p>
+          <p>
+            <strong>Three of the findings above went through self-corrections
+            during measurement.</strong> For instance, I initially attributed
+            all of Groq's T2 slowness to "Groq is writing the naive
+            one-thread-per-row pattern" — until I opened the kernel and found
+            the textbook tree reduce with a wrong barrier flag. NOTES.md in
+            the repo has the session-by-session versions if you want to see
+            the thinking evolve.
+          </p>
+          <ul>
+            <li>
+              <strong>MSL-Bench:</strong>
+              <a href="https://msl-bench.vercel.app/" target="_blank" rel="noopener">msl-bench.vercel.app</a>
+              · <a href="https://github.com/erika-goh/MSL-Bench" target="_blank" rel="noopener">github.com/erika-goh/MSL-Bench</a>
+            </li>
+            <li>
+              <strong>MSL-Flywheel (Phase 6):</strong>
+              <a href="https://github.com/erika-goh/MSL-Flywheel" target="_blank" rel="noopener">github.com/erika-goh/MSL-Flywheel</a>
+            </li>
+          </ul>
+          <p>
+            <em>Last updated 2026-07-16. This is a living writeup — the Phase
+            6 results section will grow when the Kaggle training completes.</em>
           </p>
         </article>
       </div>

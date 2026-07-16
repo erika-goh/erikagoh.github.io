@@ -47,13 +47,15 @@
             <a class="writing-entry" href="article-4.html">
               <div class="writing-head">
                 <h3 class="writing-title">
-                  I built KernelBench for Apple Silicon
+                  How well do LLMs write GPU kernels for Apple Silicon?
                 </h3>
                 <span class="writing-date">Jul 2026</span>
               </div>
               <p class="writing-desc">
-                Porting a GPU kernel benchmarking framework to run natively
-                on Apple Silicon.
+                Every model I tested nails elementwise operations and falls
+                off a cliff the moment the problem requires threadgroup-level
+                coordination. A benchmark, three months of measurements, and
+                one small fine-tune running on Kaggle as I write.
               </p>
             </a>
 
