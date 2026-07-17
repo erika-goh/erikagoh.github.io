@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#050505" />
+    <title>Building a baggage-transfer mechanism for an airport — Erika Goh</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .article-body figure {
+        margin: 2rem 0;
+        max-width: 820px;
+      }
+      .article-body figure svg {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .article-body figure img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--bg-elev);
+      }
+      .article-body figcaption {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-3);
+        margin-top: 0.6rem;
+      }
+      .fig-duo {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: 1fr;
+      }
+      @media (min-width: 620px) {
+        .fig-duo {
+          grid-template-columns: 1fr 1fr;
+          align-items: start;
+        }
+      }
+      .fig-duo img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--bg-elev);
+      }
+      .drop {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: rgba(15, 15, 15, 0.5);
+        margin: 1.5rem 0;
+        overflow: hidden;
+      }
+      .drop + .drop {
+        margin-top: 0.9rem;
+      }
+      .drop > summary {
+        cursor: pointer;
+        list-style: none;
+        padding: 0.95rem 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        font-weight: 500;
+        color: var(--text);
+        font-size: 0.96rem;
+        transition: background 0.25s ease, color 0.25s ease;
+      }
+      .drop > summary::-webkit-details-marker {
+        display: none;
+      }
+      .drop > summary:hover {
+        background: rgba(64, 121, 20, 0.08);
+        color: var(--accent);
+      }
+      .drop > summary .chev {
+        color: var(--accent);
+        font-size: 0.8rem;
+        transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        flex-shrink: 0;
+      }
+      .drop[open] > summary .chev {
+        transform: rotate(90deg);
+      }
+      .drop > summary .drop-tag {
+        margin-left: auto;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 0.62rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--text-3);
+      }
+      .drop-body {
+        padding: 0 1.2rem 1.2rem;
+        border-top: 1px solid var(--line);
+      }
+      .drop-body p:first-child {
+        margin-top: 1.1rem;
+      }
+      .drop-body p,
+      .drop-body li {
+        font-size: 0.96rem;
+      }
+      .data-table-wrap {
+        overflow-x: auto;
+        margin: 1.5rem 0;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+      }
+      table.data {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.86rem;
+        min-width: 420px;
+      }
+      table.data th,
+      table.data td {
+        text-align: left;
+        padding: 0.6rem 0.85rem;
+        border-bottom: 1px solid var(--line);
+        color: var(--text-2);
+        vertical-align: top;
+      }
+      table.data thead th {
+        color: var(--text);
+        font-weight: 600;
+        background: rgba(64, 121, 20, 0.08);
+        font-size: 0.78rem;
+      }
+      table.data tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      table.data td.num {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        color: var(--text);
+        white-space: nowrap;
+      }
+      .ok { color: #7fb84f; }
+      .warn { color: #d9a441; }
+      .bad { color: #d97a7a; }
+      .skills-inline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin: 1.25rem 0 1.75rem;
+      }
+      .skills-inline span {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 0.7rem;
+        letter-spacing: 0.04em;
+        color: var(--text-2);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 0.3rem 0.75rem;
+        background: rgba(64, 121, 20, 0.06);
+      }
+      .pull {
+        border-left: 2px solid var(--accent);
+        padding: 0.4rem 0 0.4rem 1.25rem;
+        margin: 1.5rem 0;
+        color: var(--text-2);
+        font-style: italic;
+        max-width: 720px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="treeCanvas" aria-hidden="true"></canvas>
+
+    <main class="content">
+      <div class="content-inner article">
+        <aside class="article-toc" aria-label="Contents">
+          <div class="article-toc-label">contents</div>
+          <ul class="article-toc-list">
+            <li><a href="#overview" data-target="overview">the problem</a></li>
+            <li><a href="#design" data-target="design">our design</a></li>
+            <li><a href="#retract" data-target="retract">the retract problem</a></li>
+            <li><a href="#code" data-target="code">the passenger GUI</a></li>
+            <li><a href="#team" data-target="team">collaborating</a></li>
+            <li><a href="#reflection" data-target="reflection">reflection &amp; feedback</a></li>
+            <li><a href="#refs" data-target="refs">references</a></li>
+          </ul>
+        </aside>
+
+        <article class="article-body reveal">
+          <a class="article-back" href="writing.html">
+            <span class="arrow">←</span>
+            <span>Writing</span>
+          </a>
+
+          <h1 class="article-title">
+            Building a baggage-transfer mechanism for an international airport
+          </h1>
+          <p class="article-subtitle">
+            My first cornerstone design project: a lever-arm luggage transfer built
+            in Autodesk Inventor, one stubborn retraction bug solved with a piece of
+            string, and a Python GUI for the flight data.
+          </p>
+          <div class="article-meta">
+            <span>Erika Goh</span>
+            <span>Dec 2024</span>
+            <span>ENG 1P13 · Design Project 1</span>
+            <span>7 min read</span>
+          </div>
+          <hr class="article-divider" />
+
+          <h2 id="overview">The problem</h2>
+          <p>
+            As air travel keeps growing, baggage handling has become a real
+            bottleneck for airlines everywhere. This project targeted luggage
+            handling systems across airports — how to move bags faster and more
+            efficiently for porters.
+          </p>
+          <p>
+            The goal: design a <strong>lightweight, durable bridging mechanism</strong>
+            plus a computer program that together optimize energy efficiency, cost,
+            and time during luggage transport between platforms.
+          </p>
+          <blockquote>
+            “A world with a sudden limit on air travel would be tremendously
+            different from the one we live in now.” — Charles Mann
+          </blockquote>
+
+          <figure>
+            <img src="proj-assets/p1-fig1-qarm.jpg" alt="Illustration of the Q-arm picking up luggage" />
+            <figcaption>Fig 1 — the Q-arm picking up luggage.</figcaption>
+          </figure>
+
+          <h2 id="design">Our design</h2>
+          <p>
+            We started with a rotary actuator, a Q-arm, and a 3D-printed slope that
+            the luggage sat on before being transferred to platform B. Our solution
+            was a <strong>rotatable lever arm with a transferring box</strong>,
+            positioned right under the slide on platform A and attached directly to
+            the rotary actuator — using it as a pivot to swing the luggage across.
+          </p>
+
+          <div class="fig-duo">
+            <figure style="margin: 0;">
+              <img src="proj-assets/p1-fig2-cad-platform.jpg" alt="Autodesk Inventor model of the mechanism on the platform" />
+              <figcaption>Fig 2 — the mechanism on the platform (Autodesk Inventor).</figcaption>
+            </figure>
+            <figure style="margin: 0;">
+              <img src="proj-assets/p1-fig4-mechanism.jpg" alt="Individual mechanism model: transfer box and lever arm" />
+              <figcaption>Fig 3 — the mechanism on its own: two solid parts.</figcaption>
+            </figure>
+          </div>
+
+          <p>
+            I designed the initial Inventor model, which the team then refined after
+            it was chosen as our solution. I kept the modifications in line with our
+            standard of simplicity and effectiveness by building the whole mechanism
+            from just <strong>two solid parts</strong> — the transfer box and the
+            lever arm.
+          </p>
+
+          <h2 id="retract">The retract problem</h2>
+          <p>
+            During testing the lever arm couldn't retract from platform B — the
+            weight of the box fought the rotary actuator on the way back. I solved it
+            by attaching a <strong>string from the mechanism to platform A</strong>,
+            which stopped the arm from dropping too far below platform B so it could
+            swing back up.
+          </p>
+          <p>
+            To find the point where it would reliably retract, I recorded the
+            distance between the mechanism and the platform across nine tests:
+          </p>
+
+          <figure>
+            <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Line chart of retract distance across nine tests; the mechanism fails to retract until 16 centimetres at test nine">
+              <style>
+                .ax { stroke: rgba(255,255,255,0.35); stroke-width: 1; }
+                .gr { stroke: rgba(255,255,255,0.1); stroke-width: 1; }
+                .axl { font: 400 10px 'JetBrains Mono', ui-monospace, monospace; fill: #a1a1a1; }
+                .tt { font: 600 13px 'Inter', -apple-system, sans-serif; fill: #ededed; }
+                .ln { fill: none; stroke: #6a9c2e; stroke-width: 2; }
+                .an { font: 500 11px 'Inter', -apple-system, sans-serif; fill: #7fb84f; }
+                .anx { font: 400 10px 'JetBrains Mono', ui-monospace, monospace; fill: #a1a1a1; }
+              </style>
+              <text x="16" y="20" class="tt">Distance between mechanism and platform (cm) by test</text>
+              <!-- axes -->
+              <line x1="70" y1="60" x2="70" y2="270" class="ax" />
+              <line x1="70" y1="270" x2="700" y2="270" class="ax" />
+              <!-- y gridlines 0,4,8,12,16 : y=270-dist*13.125 -->
+              <line x1="70" y1="217.5" x2="700" y2="217.5" class="gr" stroke-dasharray="2 3" />
+              <line x1="70" y1="165" x2="700" y2="165" class="gr" stroke-dasharray="2 3" />
+              <line x1="70" y1="112.5" x2="700" y2="112.5" class="gr" stroke-dasharray="2 3" />
+              <line x1="70" y1="60" x2="700" y2="60" class="gr" stroke-dasharray="2 3" />
+              <text x="60" y="273" class="axl" text-anchor="end">0</text>
+              <text x="60" y="220" class="axl" text-anchor="end">4</text>
+              <text x="60" y="168" class="axl" text-anchor="end">8</text>
+              <text x="60" y="116" class="axl" text-anchor="end">12</text>
+              <text x="60" y="63" class="axl" text-anchor="end">16</text>
+
+              <!-- line -->
+              <polyline class="ln" points="90,270 163.75,243.75 237.5,217.5 311.25,191.25 385,165 458.75,138.75 532.5,112.5 606.25,86.25 680,60" />
+
+              <!-- points colored by outcome -->
+              <circle cx="90"     cy="270"    r="4.5" fill="#d97a7a" />
+              <circle cx="163.75" cy="243.75" r="4.5" fill="#d97a7a" />
+              <circle cx="237.5"  cy="217.5"  r="4.5" fill="#d97a7a" />
+              <circle cx="311.25" cy="191.25" r="4.5" fill="#d97a7a" />
+              <circle cx="385"    cy="165"    r="4.5" fill="#d9a441" />
+              <circle cx="458.75" cy="138.75" r="4.5" fill="#d9a441" />
+              <circle cx="532.5"  cy="112.5"  r="4.5" fill="#d9a441" />
+              <circle cx="606.25" cy="86.25"  r="4.5" fill="#c9dea3" />
+              <circle cx="680"    cy="60"     r="5.5" fill="#407914" stroke="#7fb84f" stroke-width="2" />
+
+              <!-- x labels test 1..9 -->
+              <text x="90"     y="288" class="anx" text-anchor="middle">1</text>
+              <text x="163.75" y="288" class="anx" text-anchor="middle">2</text>
+              <text x="237.5"  y="288" class="anx" text-anchor="middle">3</text>
+              <text x="311.25" y="288" class="anx" text-anchor="middle">4</text>
+              <text x="385"    y="288" class="anx" text-anchor="middle">5</text>
+              <text x="458.75" y="288" class="anx" text-anchor="middle">6</text>
+              <text x="532.5"  y="288" class="anx" text-anchor="middle">7</text>
+              <text x="606.25" y="288" class="anx" text-anchor="middle">8</text>
+              <text x="680"    y="288" class="anx" text-anchor="middle">9</text>
+              <text x="385"    y="306" class="axl" text-anchor="middle">test number</text>
+
+              <!-- success annotation -->
+              <text x="628" y="50" class="an" text-anchor="end">✓ retracted at 16 cm</text>
+
+              <!-- mini legend -->
+              <circle cx="120" cy="42" r="4" fill="#d97a7a" /><text x="130" y="46" class="anx">did not retract</text>
+              <circle cx="270" cy="42" r="4" fill="#d9a441" /><text x="280" y="46" class="anx">closer</text>
+              <circle cx="360" cy="42" r="4" fill="#c9dea3" /><text x="370" y="46" class="anx">almost</text>
+            </svg>
+            <figcaption>Fig 4 — retract testing. Raising the clearance to 16 cm was the point where the arm reliably swung back.</figcaption>
+          </figure>
+
+          <details class="drop">
+            <summary>
+              <span class="chev">▶</span>
+              Full observation table
+              <span class="drop-tag">data</span>
+            </summary>
+            <div class="drop-body">
+              <div class="data-table-wrap">
+                <table class="data">
+                  <thead>
+                    <tr><th>Test</th><th>Distance (cm)</th><th>Result</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td class="num">1</td><td class="num">0</td><td class="bad">No — the mechanism did not retract</td></tr>
+                    <tr><td class="num">2</td><td class="num">2</td><td class="bad">No — the mechanism did not retract</td></tr>
+                    <tr><td class="num">3</td><td class="num">4</td><td class="bad">No — the mechanism did not retract</td></tr>
+                    <tr><td class="num">4</td><td class="num">6</td><td class="bad">No — the mechanism did not retract</td></tr>
+                    <tr><td class="num">5</td><td class="num">8</td><td class="warn">No, but closer to retracting</td></tr>
+                    <tr><td class="num">6</td><td class="num">10</td><td class="warn">No, but closer to retracting</td></tr>
+                    <tr><td class="num">7</td><td class="num">12</td><td class="warn">No, but closer to retracting</td></tr>
+                    <tr><td class="num">8</td><td class="num">14</td><td class="warn">Almost</td></tr>
+                    <tr><td class="num">9</td><td class="num">16</td><td class="ok">Yes — the mechanism retracted</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </details>
+
+          <h2 id="code">The passenger GUI</h2>
+          <p>
+            Beyond the mechanism, I significantly improved the team's flight-data
+            code by bringing in my own Python knowledge of the
+            <strong>GUI toolkit (Tkinter)</strong>. Using text frames and labels made
+            the code more efficient and gave the flight data a professional, organized
+            display.
+          </p>
+
+          <figure>
+            <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bar chart of layover passengers by plane model, from the passenger data GUI">
+              <style>
+                .ax { stroke: rgba(255,255,255,0.35); stroke-width: 1; }
+                .gr { stroke: rgba(255,255,255,0.1); stroke-width: 1; }
+                .axl { font: 400 10px 'JetBrains Mono', ui-monospace, monospace; fill: #a1a1a1; }
+                .tt { font: 600 13px 'Inter', -apple-system, sans-serif; fill: #ededed; }
+                .bar { fill: #407914; }
+                .bv { font: 500 10px 'JetBrains Mono', ui-monospace, monospace; fill: #ededed; }
+                .mdl { font: 400 9.5px 'Inter', -apple-system, sans-serif; fill: #a1a1a1; }
+              </style>
+              <text x="16" y="20" class="tt">Layover passengers by plane model (GUI output)</text>
+              <!-- y axis 0..200, plot y 60..250 : y=250-val*0.95 -->
+              <line x1="70" y1="60" x2="70" y2="250" class="ax" />
+              <line x1="70" y1="250" x2="700" y2="250" class="ax" />
+              <line x1="70" y1="202.5" x2="700" y2="202.5" class="gr" stroke-dasharray="2 3" />
+              <line x1="70" y1="155" x2="700" y2="155" class="gr" stroke-dasharray="2 3" />
+              <line x1="70" y1="107.5" x2="700" y2="107.5" class="gr" stroke-dasharray="2 3" />
+              <line x1="70" y1="60" x2="700" y2="60" class="gr" stroke-dasharray="2 3" />
+              <text x="60" y="253" class="axl" text-anchor="end">0</text>
+              <text x="60" y="205" class="axl" text-anchor="end">50</text>
+              <text x="60" y="158" class="axl" text-anchor="end">100</text>
+              <text x="60" y="110" class="axl" text-anchor="end">150</text>
+              <text x="60" y="63" class="axl" text-anchor="end">200</text>
+
+              <!-- 7 bars, width 54, gap. x start 92. scale 0.95px per passenger -->
+              <!-- 777-300ER 191 -->
+              <rect x="92"  y="68.55" width="54" height="181.45" class="bar" /><text x="119" y="63" class="bv" text-anchor="middle">191</text>
+              <!-- 777-200LR 0 -->
+              <rect x="176" y="249"   width="54" height="1"      class="bar" /><text x="203" y="245" class="bv" text-anchor="middle">0</text>
+              <!-- A330-300 129 -->
+              <rect x="260" y="127.45" width="54" height="122.55" class="bar" /><text x="287" y="122" class="bv" text-anchor="middle">129</text>
+              <!-- Embraer 32 -->
+              <rect x="344" y="219.6"  width="54" height="30.4"   class="bar" /><text x="371" y="214" class="bv" text-anchor="middle">32</text>
+              <!-- A319-100 60 -->
+              <rect x="428" y="193"    width="54" height="57"     class="bar" /><text x="455" y="188" class="bv" text-anchor="middle">60</text>
+              <!-- 737 MAX 8 97 -->
+              <rect x="512" y="157.85" width="54" height="92.15"  class="bar" /><text x="539" y="153" class="bv" text-anchor="middle">97</text>
+              <!-- A321-200 90 -->
+              <rect x="596" y="164.5"  width="54" height="85.5"   class="bar" /><text x="623" y="159" class="bv" text-anchor="middle">90</text>
+
+              <text x="119" y="264" class="mdl" text-anchor="middle">777-300ER</text>
+              <text x="203" y="264" class="mdl" text-anchor="middle">777-200LR</text>
+              <text x="287" y="264" class="mdl" text-anchor="middle">A330-300</text>
+              <text x="371" y="264" class="mdl" text-anchor="middle">Embraer</text>
+              <text x="455" y="264" class="mdl" text-anchor="middle">A319-100</text>
+              <text x="539" y="264" class="mdl" text-anchor="middle">737 MAX 8</text>
+              <text x="623" y="264" class="mdl" text-anchor="middle">A321-200</text>
+            </svg>
+            <figcaption>Fig 5 — layover passengers per plane model, read straight from the GUI's flight data.</figcaption>
+          </figure>
+
+          <figure>
+            <img src="proj-assets/p1-fig7-gui.jpg" alt="Tkinter GUI display of passenger data from an airport" />
+            <figcaption>Fig 6 — the passenger-data GUI I built in Tkinter.</figcaption>
+          </figure>
+
+          <details class="drop">
+            <summary>
+              <span class="chev">▶</span>
+              Full flight data (GUI)
+              <span class="drop-tag">data</span>
+            </summary>
+            <div class="drop-body">
+              <div class="data-table-wrap">
+                <table class="data">
+                  <thead>
+                    <tr><th>Plane model</th><th>Layover passengers</th><th>Oversold business</th><th>Oversold economy</th><th>Late layover</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>Boeing 777-300ER</td><td class="num">191</td><td class="num">0</td><td class="num">4</td><td class="num">191</td></tr>
+                    <tr><td>Boeing 777-200LR</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+                    <tr><td>Airbus A330-300</td><td class="num">129</td><td class="num">0</td><td class="num">0</td><td class="num">129</td></tr>
+                    <tr><td>Embraer A330-300</td><td class="num">32</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+                    <tr><td>Airbus A319-100</td><td class="num">60</td><td class="num">3</td><td class="num">0</td><td class="num">0</td></tr>
+                    <tr><td>Boeing 737 MAX 8</td><td class="num">97</td><td class="num">2</td><td class="num">6</td><td class="num">0</td></tr>
+                    <tr><td>Airbus A321-200</td><td class="num">90</td><td class="num">1</td><td class="num">1</td><td class="num">90</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </details>
+
+          <h2 id="team">Collaborating with my team</h2>
+          <p>
+            As the project administrator I kept the team cohesive — planning weekly
+            meetings where we assigned new responsibilities and worked through
+            problems as they came up. We resolved the team code together by fixing
+            errors in the passenger data, and kept iterating on AutoCAD prototypes,
+            tuning the fit against the pin on the rotary actuator and the platform.
+          </p>
+          <div class="skills-inline">
+            <span>Autodesk Inventor</span>
+            <span>Python (Tkinter)</span>
+            <span>Time management</span>
+            <span>Collaboration</span>
+            <span>Problem solving</span>
+            <span>Communication</span>
+          </div>
+
+          <h2 id="reflection">Reflection &amp; feedback</h2>
+          <details class="drop">
+            <summary>
+              <span class="chev">▶</span>
+              Final reflection
+              <span class="drop-tag">learning</span>
+            </summary>
+            <div class="drop-body">
+              <p>
+                Looking back, most of the challenges came down to the weight of the
+                mechanism and the environment code. The project drilled in the value of
+                managing time well and taking an iterative approach — constantly testing
+                the whole mechanism and the Q-arm code so I could plan real solutions to
+                problems as they surfaced. I grew most in Autodesk Inventor, experimenting
+                with new tools and features to modify the mechanism and improve efficiency.
+              </p>
+              <p>Some of the questions I kept coming back to:</p>
+              <ul>
+                <li>How could the mechanism be redesigned to add complexity and overall stability, rather than optimizing for simplicity?</li>
+                <li>Could laser cutting reduce the weight of the lever arm and transfer box with a more effective material?</li>
+                <li>Would a linear actuator glide the mechanism back more effectively than the rotary actuator?</li>
+              </ul>
+            </div>
+          </details>
+          <details class="drop">
+            <summary>
+              <span class="chev">▶</span>
+              Summary
+              <span class="drop-tag">takeaway</span>
+            </summary>
+            <div class="drop-body">
+              <p>
+                This project taught me skills I'll carry into future work. The airport
+                transfer mechanism succeeded thanks to a sturdy material, frequent
+                testing, and steady improvements along the way — like reducing the
+                weight and size of the lever arm. With further refinement, a design like
+                this could make travel more efficient while staying innovative and
+                sustainable.
+              </p>
+            </div>
+          </details>
+          <details class="drop">
+            <summary>
+              <span class="chev">▶</span>
+              What my teammate said
+              <span class="drop-tag">peer feedback</span>
+            </summary>
+            <div class="drop-body">
+              <p class="pull">
+                “Erika, as the administrator of this project, was extremely helpful in
+                the way she helped the team ensure everything was handed in, inside and
+                outside Design Studio meetings. She was very easy to get along with and
+                agreed with most of the group's input, minimizing conflict. In
+                particular, her work with the final project design was excellent — she
+                successfully came up with a simple, yet effective mechanism.”
+              </p>
+              <p style="color: var(--text-3); font-size: 0.85rem;">— Project 1 teammate</p>
+            </div>
+          </details>
+
+          <h2 id="refs">References</h2>
+          <ol style="color: var(--text-3); font-size: 0.82rem; line-height: 1.7;">
+            <li>C. Mann, “Charles C. Mann Quotes,” BrainyQuote. Accessed Jan. 5, 2025.</li>
+          </ol>
+
+          <p style="color: var(--text-3); font-size: 0.85rem; margin-top: 2rem;">
+            <em>Design Project 1 · ENG 1P13 Integrated Cornerstone Design, McMaster
+            University · Fall 2024.</em>
+          </p>
+        </article>
+      </div>
+    </main>
+
+    <script src="main.js"></script>
+  </body>
+</html>
