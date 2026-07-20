@@ -1074,6 +1074,18 @@ section {
 .project-links a:hover::after {
   color: var(--accent);
 }
+.project-links .disabled {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  opacity: 0.5;
+  cursor: not-allowed;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
 
 /* ═══ WRITING - editorial list of tab-cards ═══ */
 .writing-list {
