@@ -1120,6 +1120,37 @@ section {
 .writing-entry:focus-visible .writing-title {
   color: var(--accent);
 }
+.writing-entry--locked {
+  cursor: default;
+  opacity: 0.55;
+}
+.writing-entry--locked:hover,
+.writing-entry--locked:focus-visible {
+  border-color: var(--line);
+  background: none;
+  transform: none;
+}
+.writing-entry--locked:hover::before,
+.writing-entry--locked:focus-visible::before {
+  transform: scaleY(0);
+}
+.writing-entry--locked:hover .writing-title,
+.writing-entry--locked:focus-visible .writing-title {
+  color: inherit;
+}
+.writing-lock {
+  display: inline-block;
+  margin-left: 0.6rem;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  vertical-align: middle;
+}
 .writing-head {
   display: flex;
   justify-content: space-between;

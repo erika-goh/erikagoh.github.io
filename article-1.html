@@ -7,7 +7,7 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <meta name="theme-color" content="#050505" />
-    <title>Article Title Placeholder — Erika Goh</title>
+    <title>Complex Systems — Erika Goh</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -15,6 +15,27 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* Article-only tweaks so figures sit cleanly on the dark theme */
+      .article-body figure {
+        margin: 2rem 0;
+        max-width: 760px;
+      }
+      .article-body figure img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 4px;
+      }
+      .article-body figcaption {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-3);
+        margin-top: 0.6rem;
+      }
+    </style>
   </head>
   <body>
     <canvas id="treeCanvas" aria-hidden="true"></canvas>
@@ -24,25 +45,20 @@
         <aside class="article-toc" aria-label="Contents">
           <div class="article-toc-label">contents</div>
           <ul class="article-toc-list">
+            <li><a href="#overview" data-target="overview">overview</a></li>
+            <li><a href="#emergence" data-target="emergence">emergence</a></li>
             <li>
-              <a href="#overview" data-target="overview">overview</a>
-            </li>
-            <li>
-              <a href="#background" data-target="background">background</a>
-            </li>
-            <li>
-              <a href="#approach" data-target="approach">approach</a>
-            </li>
-            <li>
-              <a href="#implementation" data-target="implementation"
-                >implementation</a
+              <a href="#phase-transitions" data-target="phase-transitions"
+                >phase transitions</a
               >
             </li>
             <li>
-              <a href="#results" data-target="results">results</a>
+              <a href="#self-organized-criticality" data-target="self-organized-criticality"
+                >self-organized criticality</a
+              >
             </li>
             <li>
-              <a href="#takeaways" data-target="takeaways">takeaways</a>
+              <a href="#power-laws" data-target="power-laws">power laws</a>
             </li>
           </ul>
         </aside>
@@ -53,75 +69,89 @@
             <span>Writing</span>
           </a>
 
-          <h1 class="article-title">Article Title Placeholder</h1>
+          <h1 class="article-title">Complex Systems</h1>
           <p class="article-subtitle">
-            Short subtitle that hooks the reader — swap for your real
-            summary.
+            Four ideas from the science of complex systems that changed how I
+            think about software, social networks, marketing, and AI.
           </p>
           <div class="article-meta">
             <span>Erika Goh</span>
-            <span>Jul 2026</span>
-            <span>6 min read</span>
+            <span>Jun 2026</span>
+            <span>5 min read</span>
           </div>
           <hr class="article-divider" />
 
           <h2 id="overview">Overview</h2>
           <p>
-            Replace this with the opening of your article — the frame,
-            problem, or premise. Keep it short and specific. State the claim
-            you're going to defend or the finding you're going to share.
+            There exists a class of systems that disrupts the way that many
+            engineers are trained to think. You can understand every component
+            of a system individually (every line of code, every neuron, every
+            interaction) and still have no idea what the system will do. This
+            is not a result of randomness, but rather because the system is
+            complex.
           </p>
           <p>
-            A second paragraph can extend the setup with the smallest amount
-            of context a reader needs to understand what comes next.
+            Complex systems are defined by diverse and interconnected elements
+            whose behaviour cannot be determined by examining each part in
+            isolation. This idea was not developed by any one person; instead it
+            gradually evolved over a century through various discoveries. In the
+            1890s, Henri Poincaré was working on the three-body problem, which
+            consisted of computing the behaviour and relation of three objects
+            (planets) while experiencing mutual gravity. Poincaré proved that
+            even a small deterministic system can still show non-linear
+            behaviour. Poincaré's unpredictability was then made quantitative by
+            Edward Lorenz in the 1960s, and the field finally got its name in
+            the 1980s from a group of economists, physicists, and biologists at
+            the Santa Fe Institute. That meant complex systems had finally
+            become its own field, with shared concepts that could explain almost
+            anything.
+          </p>
+          <p>
+            I want to introduce the four core concepts from the science of
+            complex systems that changed my perspective on important things like
+            software, social networks, marketing, AI, and basically everything
+            else. The craziest part about all of this is that after decades of
+            research and development in this field, the math is deceptively
+            simple for something that seems so complex.
           </p>
 
-          <h2 id="background">Background</h2>
+          <h2 id="emergence">Emergence</h2>
           <p>
-            Use this section for the shortest useful version of what came
-            before — prior work, existing patterns, or the state of the tool
-            you're going to change.
+            The network of parts results in the system as a whole operating in
+            unexpected ways, where the whole becomes something entirely new, not
+            merely the sum of its parts. This is called emergence.
           </p>
+          <p>
+            Imagine a cloud of thousands of birds gathered in the sky, moving in
+            perfect synchrony; it almost looks choreographed but isn't. There's
+            no plan, nor any network of communication. How can such coordinated
+            behaviour emerge? Simple enough: the birds follow three rules: do
+            not collide with one another, stay close, and match each other's
+            speed. With all of the thousands of birds applying the exact same
+            rules and routines, we come across emergence.
+          </p>
+          <figure>
+            <img
+              src="proj-assets/emergence-murmuration.jpg"
+              alt="A large flock of starlings forming a shifting shape against a dusk sky above a treeline"
+            />
+            <figcaption>
+              Figure 1. A starling murmuration at dusk: coordinated shape with
+              no coordinator.
+            </figcaption>
+          </figure>
 
-          <h2 id="approach">Approach</h2>
-          <p>
-            Describe your approach at a high level here. What did you
-            change, and why did you expect it to work? A single mechanism
-            explained clearly beats three mentioned in passing.
-          </p>
-          <blockquote>
-            A pull-quote or callout works well here to break up dense
-            paragraphs and highlight a claim.
-          </blockquote>
+          <h2 id="phase-transitions">Phase Transitions</h2>
+          <p><em>Draft in progress.</em></p>
 
-          <h2 id="implementation">Implementation</h2>
-          <p>
-            The mechanics: what you built, in enough detail that another
-            engineer could reason about it. Inline <code>code</code> and
-            fenced blocks are supported.
-          </p>
-          <pre><code>function loop() {
-  // sample implementation snippet
-  return result;
-}</code></pre>
+          <h2 id="self-organized-criticality">Self-organized Criticality</h2>
+          <p><em>Draft in progress.</em></p>
 
-          <h2 id="results">Results</h2>
-          <p>
-            Numbers, benchmarks, or before/after comparisons live here.
-            Prefer honest deltas over hype. If something didn't work, say
-            so.
-          </p>
-          <ul>
-            <li>Metric one: 0 → 42.</li>
-            <li>Metric two: 3.4s → 0.9s.</li>
-            <li>Metric three: qualitative improvement in X.</li>
-          </ul>
+          <h2 id="power-laws">Power Laws</h2>
+          <p><em>Draft in progress.</em></p>
 
-          <h2 id="takeaways">Takeaways</h2>
-          <p>
-            Close with the durable lesson — the one thing you'd tell the
-            past version of yourself. A short conclusion beats a long one.
-          </p>
+          <hr class="article-divider" />
+          <p><em>This piece is still being written. More to come.</em></p>
         </article>
       </div>
     </main>

@@ -79,22 +79,22 @@
           <p>
             So the thing about GPU programming is that CUDA has been the default
             for fifteen years. If I ask a frontier LLM to write me a fast matmul,
-            what comes back is CUDA — not because I asked for it, but because
+            what comes back is CUDA, not because I asked for it, but because
             NVIDIA's toolchain is the water these models swim in. Everything on
             the public internet that touches "GPU kernel" has
             <code>__global__</code> in it somewhere.
           </p>
           <p>
-            But CUDA is NVIDIA-only. My Mac runs Apple Silicon, which uses Metal
-            — a related-but-not-identical GPU programming model with its own
+            But CUDA is NVIDIA-only. My Mac runs Apple Silicon, which uses Metal,
+            a related-but-not-identical GPU programming model with its own
             shading language (MSL, the Metal Shading Language). Apple's own
-            libraries — MPS, Core ML, PyTorch's MPS backend — all dispatch Metal
+            libraries (MPS, Core ML, PyTorch's MPS backend) all dispatch Metal
             under the hood.
           </p>
           <p>
             For my own learning, I wanted to know: how well do LLMs actually
-            generalize from CUDA to Metal? Not "can they emit Metal syntax" —
-            they can, if you ask nicely — but "when the Metal answer
+            generalize from CUDA to Metal? Not "can they emit Metal syntax"
+            (they can, if you ask nicely) but "when the Metal answer
             <em>diverges</em> from the CUDA answer, do they cross the gap
             correctly?"
           </p>
@@ -103,7 +103,7 @@
             numerical operations, judged end-to-end: the LLM writes MSL, my
             harness compiles it with the real Xcode toolchain, verifies it
             against a PyTorch MPS reference, and times it with GPU timestamps.
-            The number that comes out is <code>fast_p</code> — the fraction of
+            The number that comes out is <code>fast_p</code>: the fraction of
             problems where the model produced a kernel that (a) compiles, (b)
             matches the reference numerically, and (c) runs at least
             <code>p×</code> the MPS reference speed. <code>fast_0</code> is
@@ -117,14 +117,14 @@
             cliff varies. The cliff itself is universal.
           </blockquote>
           <p>
-            That's the story. The rest of this is how I got there — and one
+            That's the story. The rest of this is how I got there, and one
             thing I'm running right now to see if it's fixable.
           </p>
 
           <h2 id="writing-metal">What "writing Metal" actually looks like</h2>
           <p>
             Quick minute on what MSL is and why it isn't just "CUDA with
-            different keywords" — this matters for the whole benchmark. A Metal
+            different keywords." This matters for the whole benchmark. A Metal
             compute kernel is a function that runs on the GPU across many
             threads in parallel:
           </p>
@@ -165,12 +165,12 @@ threadgroup_barrier(mem_flags::mem_threadgroup);
           <p>
             Notice <code>threadgroup_barrier(mem_flags::mem_threadgroup)</code>.
             CUDA's <code>__syncthreads()</code> has no arguments. Metal's
-            barrier takes a <strong>memory scope flag</strong> —
-            <code>mem_threadgroup</code>, <code>mem_device</code>,
-            <code>mem_texture</code>, or an OR of them — because Metal's memory
+            barrier takes a <strong>memory scope flag</strong>
+            (<code>mem_threadgroup</code>, <code>mem_device</code>,
+            <code>mem_texture</code>, or an OR of them) because Metal's memory
             model is more explicit about which pool of memory is being fenced.
             Pick the wrong flag and your kernel still compiles, still runs,
-            still produces correct output — and pays a measurable perf cost on
+            still produces correct output, and pays a measurable perf cost on
             every reduction step. I'll come back to this exact bug; it's costing
             7% on <code>p101_row_sum</code> in the wild.
           </p>
@@ -205,7 +205,7 @@ threadgroup_barrier(mem_flags::mem_threadgroup);
               <text x="35" y="85" class="tier-note">elementwise</text>
               <text x="130" y="65" class="tier-ex">vector_add, relu, sigmoid, tanh,</text>
               <text x="130" y="82" class="tier-ex">gelu, abs, clamp, exp, ...</text>
-              <text x="450" y="75" class="tier-note">≈ none — C-math translation</text>
+              <text x="450" y="75" class="tier-note">≈ none: C-math translation</text>
 
               <rect x="20" y="110" width="90" height="60" rx="4" class="tier-card tier-t2" />
               <text x="35" y="135" class="tier-label">T2</text>
@@ -231,11 +231,11 @@ threadgroup_barrier(mem_flags::mem_threadgroup);
               <text x="450" y="277" class="tier-note">T2 + T3 combined, plus in-register</text>
               <text x="450" y="293" class="tier-note">accumulation + dispatch-overhead awareness</text>
             </svg>
-            <figcaption>Fig 1 — tier taxonomy. Difficulty rises with how much MSL-specific knowledge the kernel forces the model to use.</figcaption>
+            <figcaption>Fig 1: tier taxonomy. Difficulty rises with how much MSL-specific knowledge the kernel forces the model to use.</figcaption>
           </figure>
 
           <p>
-            The tiering isn't just difficulty — it's calibrated around
+            The tiering isn't just difficulty; it's calibrated around
             <strong>what MSL-specific patterns each problem forces the model to
             use.</strong> T1 problems could be written in almost any C-like GPU
             language. T2+ problems specifically require Metal idioms that don't
@@ -245,24 +245,24 @@ threadgroup_barrier(mem_flags::mem_threadgroup);
           <p>Every candidate kernel goes through the same pipeline:</p>
           <ol>
             <li>
-              <strong>Compile</strong> — write the MSL to disk, invoke
+              <strong>Compile</strong>: write the MSL to disk, invoke
               <code>xcrun metal</code> → <code>.metallib</code>. If it fails,
               capture the compiler diagnostic verbatim (that diagnostic gets
               fed back to the model on the next repair attempt).
             </li>
             <li>
-              <strong>Execute</strong> — a small Swift runner binds input
+              <strong>Execute</strong>: a small Swift runner binds input
               buffers, dispatches with the grid shape the spec requires, and
               reads GPU timestamps off the command buffer.
             </li>
             <li>
-              <strong>Verify</strong> — output tensors are
+              <strong>Verify</strong>: output tensors are
               <code>allclose</code>'d against a PyTorch MPS reference. NaN/Inf
               is an automatic fail; per-problem tolerances are set to what
               MPS-vs-double differs by.
             </li>
             <li>
-              <strong>Time</strong> — 3 warmup runs, then median of 10 timed
+              <strong>Time</strong>: 3 warmup runs, then median of 10 timed
               runs. Runs with IQR &gt; 15% of median are flagged as thermally
               noisy.
             </li>
@@ -337,7 +337,7 @@ threadgroup_barrier(mem_flags::mem_threadgroup);
               <rect x="400" y="330" width="10" height="10" class="m4" /><text x="416" y="339" class="lg">gemini-2.5-flash</text>
               <rect x="530" y="330" width="10" height="10" class="m5" /><text x="546" y="339" class="lg">qwen3-32b (reasoning)</text>
             </svg>
-            <figcaption>Fig 2 — fast_0 correctness by tier, per model. The universal cliff at T1→T2.</figcaption>
+            <figcaption>Fig 2: fast_0 correctness by tier, per model. The universal cliff at T1→T2.</figcaption>
           </figure>
 
           <p>Three things pop out.</p>
@@ -345,20 +345,20 @@ threadgroup_barrier(mem_flags::mem_threadgroup);
             <strong>Metal elementwise fits in an 8B model.</strong> Both 8B and
             70B Llamas hit 100% on T1. Whatever an LLM needs to know about MSL
             to write <code>out[i] = f(x[i])</code> is compact enough that the
-            small model already has it. The bigger model's edge starts at T2 —
+            small model already has it. The bigger model's edge starts at T2;
             that's where MSL-specific patterns begin to matter.
           </p>
           <p>
             <strong>The cliff is universal but variable-height.</strong> Every
             non-reasoning model drops sharply between T1 and T2. Llama-3.1-8b
-            drops 93 points; Gemini drops 72; gpt-oss-120b — the strongest
-            model in my set — still drops 46. This isn't any single provider
+            drops 93 points; Gemini drops 72; gpt-oss-120b, the strongest
+            model in my set, still drops 46. This isn't any single provider
             getting Metal "wrong." It's the domain: T1 is a C-math translation,
             T2 requires knowing Apple's specific memory model.
           </p>
           <p>
             <strong>Reasoning models have an inverted profile.</strong>
-            qwen3-32b is the only model in my set that failed T1 — 3 out of 15.
+            qwen3-32b is the only model in my set that failed T1: 3 out of 15.
             Its dominant failure mode was using
             <code>thread_position_in_grid</code> as a <em>free variable</em>
             (CUDA-style) instead of a <em>parameter attribute</em>. Reading its
@@ -366,13 +366,13 @@ threadgroup_barrier(mem_flags::mem_threadgroup);
             wrong syntax from adjacent-language knowledge. But qwen3 is also the
             only model that got any T3 problem correct. Reasoning appears to
             <em>hurt</em> on syntax-shape problems and <em>help</em> on
-            algorithm-shape problems — even while being dramatically worse
+            algorithm-shape problems, even while being dramatically worse
             overall.
           </p>
           <p>
             So I ran a follow-up specifically to test this. If truncated
             <code>&lt;think&gt;</code> was the bottleneck (a plausible
-            hypothesis — reasoning tokens compete with kernel-emit tokens under
+            hypothesis: reasoning tokens compete with kernel-emit tokens under
             a shared <code>max_tokens=4096</code> budget), correctness should
             improve when I gave the model more room. I bumped
             <code>max_tokens</code> from 4096 to 5200, the ceiling under Groq's
@@ -403,7 +403,7 @@ threadgroup_barrier(mem_flags::mem_threadgroup);
             Getting a T2 kernel correct isn't the same as getting it fast. On
             <code>p101_row_sum</code>, Groq's llama-3.3-70b wrote a kernel that
             verified correctly, then ran at 0.42× MPS speed. It compiled, it
-            ran, it did the right thing — and it was 2.4× slower than Apple's
+            ran, it did the right thing, and it was 2.4× slower than Apple's
             own kernel doing the same job.
           </p>
           <p>
@@ -451,12 +451,12 @@ threadgroup_barrier(mem_flags::mem_threadgroup);
 
               <text x="460" y="230" class="axis-lab" text-anchor="middle">0 ────────── GB/s ────────── ~175</text>
             </svg>
-            <figcaption>Fig 3 — bandwidth ladder on p101_row_sum. Four candidate kernels vs Apple's MPS reference.</figcaption>
+            <figcaption>Fig 3: bandwidth ladder on p101_row_sum. Four candidate kernels vs Apple's MPS reference.</figcaption>
           </figure>
 
           <p>Three layers of cost, each measured:</p>
           <p>
-            <strong>Layer 1 — Barrier-flag confusion (~7%).</strong> Groq wrote
+            <strong>Layer 1: Barrier-flag confusion (~7%).</strong> Groq wrote
             <code>threadgroup_barrier(mem_flags::mem_device)</code> when the
             reduction only touches threadgroup memory. Apple's compiler
             partially elides the redundant device-scope fence, but not
@@ -465,17 +465,17 @@ threadgroup_barrier(mem_flags::mem_threadgroup);
             the model doesn't know a flag is load-bearing.
           </p>
           <p>
-            <strong>Layer 2 — Missing MSL idioms (~8%).</strong> Groq's
-            algorithm was correct-but-generic — a halving-tree reduce over
+            <strong>Layer 2: Missing MSL idioms (~8%).</strong> Groq's
+            algorithm was correct-but-generic: a halving-tree reduce over
             threadgroup memory. Metal has SIMD-group intrinsics
             (<code>simd_shuffle_down</code>) that let you reduce inside a SIMD
             group using registers only, no shared memory and no barriers.
             Rewriting the reduction that way saved another 8%.
           </p>
           <p>
-            <strong>Layer 3 — Bandwidth utilization (~50%).</strong> Even my
+            <strong>Layer 3: Bandwidth utilization (~50%).</strong> Even my
             hand-tuned kernel peaks at 90.5 GB/s vs MPS's 175. A
-            <code>float4</code>-load variant made no difference — Apple's
+            <code>float4</code>-load variant made no difference; Apple's
             memory subsystem already coalesces adjacent scalar loads into
             cache-line transactions. Transaction count isn't the knob.
           </p>
@@ -494,7 +494,7 @@ threadgroup_barrier(mem_flags::mem_threadgroup);
               total gap).</strong> The problem spec fixes the launch: one
               threadgroup per row, 256 threads per group. Under that
               constraint, ~90 GB/s appears to be the ceiling. MPS isn't bound
-              by the spec — it picks its own launch — and uses that freedom to
+              by the spec (it picks its own launch) and uses that freedom to
               run at ~2× the throughput.
             </li>
           </ul>
@@ -530,23 +530,23 @@ p104_row_softmax  one_shot: compile-fail  →  repair@5: verify-fail</code></pre
           </p>
           <ul>
             <li>
-              <strong>Layer 1 errors</strong> — compile-fails. The compiler
+              <strong>Layer 1 errors</strong>: compile-fails. The compiler
               <em>tells</em> the model what's wrong. Repair fixes these.
             </li>
             <li>
-              <strong>Layer 2 errors</strong> — verify-fails. Code runs,
+              <strong>Layer 2 errors</strong>: verify-fails. Code runs,
               semantics are wrong. Scalar-error feedback can't point at the
               specific line.
             </li>
             <li>
-              <strong>Layer 3 errors</strong> — slow-but-correct. Invisible to
+              <strong>Layer 3 errors</strong>: slow-but-correct. Invisible to
               both compile and verify signals.
             </li>
           </ul>
           <p>
             So the ceiling of <code>repair@5</code> with only compile +
             scalar-correctness signal is "unstick layer-1 errors." Anything
-            past that needs a richer feedback surface — per-element diff
+            past that needs a richer feedback surface: per-element diff
             previews, shape-mismatch hints, or performance-vs-reference
             signals. That's a natural direction for a future revision.
           </p>
@@ -557,7 +557,7 @@ p104_row_softmax  one_shot: compile-fail  →  repair@5: verify-fail</code></pre
           </h2>
           <p>
             Everything above is measurement. What I actually want to know next
-            is whether it's <em>learnable</em> — whether the failure
+            is whether it's <em>learnable</em>: whether the failure
             transcripts an LLM produces on MSL-Bench are themselves sufficient
             training data to make a better MSL-writing LLM.
           </p>
@@ -617,10 +617,10 @@ p104_row_softmax  one_shot: compile-fail  →  repair@5: verify-fail</code></pre
               <polygon points="215,167 222,163 222,171" class="arr-head" />
 
               <path d="M 120 140 Q 120 250 360 250 Q 600 250 600 195" class="loop" />
-              <text x="360" y="272" class="loop-lab" text-anchor="middle">loop — new data enriches the next curation</text>
+              <text x="360" y="272" class="loop-lab" text-anchor="middle">loop: new data enriches the next curation</text>
               <text x="360" y="305" class="caption" text-anchor="middle">"data flywheel": the LLM's own failure transcripts become its training data</text>
             </svg>
-            <figcaption>Fig 4 — the MSL-Flywheel loop. Six steps; step 3 is currently on a Kaggle P100 as I write this.</figcaption>
+            <figcaption>Fig 4: the MSL-Flywheel loop. Six steps; step 3 is currently on a Kaggle P100 as I write this.</figcaption>
           </figure>
 
           <p>
@@ -629,7 +629,7 @@ p104_row_softmax  one_shot: compile-fail  →  repair@5: verify-fail</code></pre
           </p>
           <ul>
             <li>
-              <strong>Type A — repair trajectory pairs.</strong> When an
+              <strong>Type A: repair trajectory pairs.</strong> When an
               attempt failed, feedback was given, and the next attempt
               succeeded, use the
               <code>(failed_kernel + compile_error → corrected_kernel)</code>
@@ -637,30 +637,30 @@ p104_row_softmax  one_shot: compile-fail  →  repair@5: verify-fail</code></pre
               volume.
             </li>
             <li>
-              <strong>Type B — best-model teacher pairs.</strong> For each
+              <strong>Type B: best-model teacher pairs.</strong> For each
               problem, if any run produced a correct kernel, that kernel
               becomes the SFT target for training weaker models. Aggregates
               the suite's cross-model wisdom.
             </li>
             <li>
-              <strong>Type C — golden kernel pairs.</strong> Hand-verified
+              <strong>Type C: golden kernel pairs.</strong> Hand-verified
               reference kernels from <code>tests/golden_kernels/*.metal</code>,
               paired with their problem prompt.
             </li>
           </ul>
           <p>
             Current curated dataset (v1) is 46 pairs: 1 Type A, 33 Type B, 12
-            Type C. Small — deliberately. This is the minimum viable dataset
+            Type C. Small, deliberately. This is the minimum viable dataset
             to test whether the training loop <em>works at all</em>, not
             whether it produces a strong model. The tier distribution is
-            inverted from where I want improvement (28 T1, 10 T2, 4 T3, 4 T4 —
+            inverted from where I want improvement (28 T1, 10 T2, 4 T3, 4 T4:
             sparse where models most need help), but that's a chicken-and-egg
             problem: I can only turn a <em>correct</em> kernel into a training
             pair, and models rarely produce correct T3/T4 kernels.
           </p>
           <p>
             <strong>Training setup.</strong> LoRA fine-tune of
-            Llama-3.1-8B-Instruct — rank 16 / alpha 32, QLoRA 4-bit NF4,
+            Llama-3.1-8B-Instruct: rank 16 / alpha 32, QLoRA 4-bit NF4,
             <code>paged_adamw_8bit</code>, LR 2e-4 cosine, 3 epochs.
             <code>assistant_only_loss=True</code> so the failed-kernel turn in
             the one Type-A pair doesn't get pulled into the loss (I would
@@ -669,7 +669,7 @@ p104_row_softmax  one_shot: compile-fail  →  repair@5: verify-fail</code></pre
           </p>
           <p>
             <strong>Why Llama-3.1-8B specifically?</strong> Because I already
-            have a full MSL-Bench baseline for it on Groq — 28.3% fast_0
+            have a full MSL-Bench baseline for it on Groq: 28.3% fast_0
             across all 60 problems. The delta from base to fine-tuned is
             directly measurable using the same 60 problems, same harness,
             same everything. No re-normalization games.
@@ -690,17 +690,17 @@ ADAPTER ./adapter-v1.gguf</code></pre>
             actually move the numbers, and where does it move them?
           </p>
           <blockquote>
-            <strong>Results section — pending.</strong> As of 2026-07-16, the
+            <strong>Results section: pending.</strong> As of 2026-07-16, the
             Kaggle training run is queued and unblocked (Meta's Llama-3.1-8B
             license accepted). The delta report will land right here. What
             I'll be looking for, in order of aspiration: <strong>T1 speedup
             shifts</strong> (kernels moving from correct-but-slow to
-            correct-and-≥MPS — evidence the model picked up Metal-specific
+            correct-and-≥MPS: evidence the model picked up Metal-specific
             perf idioms); <strong>T2 correctness gains</strong> (+1 to +3
             correct kernels on this dataset size would be a real result);
-            <strong>T3/T4 movement</strong> (very aspirational — only 8 of 46
+            <strong>T3/T4 movement</strong> (very aspirational: only 8 of 46
             training pairs are T3+T4). If the delta is zero or negative, that's
-            also a real finding — the 46-pair dataset isn't rich enough, and
+            also a real finding: the 46-pair dataset isn't rich enough, and
             the next iteration needs more sweeps to enrich the pool.
           </blockquote>
 
@@ -732,7 +732,7 @@ ADAPTER ./adapter-v1.gguf</code></pre>
             <strong>Three of the findings above went through self-corrections
             during measurement.</strong> For instance, I initially attributed
             all of Groq's T2 slowness to "Groq is writing the naive
-            one-thread-per-row pattern" — until I opened the kernel and found
+            one-thread-per-row pattern," until I opened the kernel and found
             the textbook tree reduce with a wrong barrier flag. NOTES.md in
             the repo has the session-by-session versions if you want to see
             the thinking evolve.
@@ -749,7 +749,7 @@ ADAPTER ./adapter-v1.gguf</code></pre>
             </li>
           </ul>
           <p>
-            <em>Last updated 2026-07-16. This is a living writeup — the Phase
+            <em>Last updated 2026-07-16. This is a living writeup; the Phase
             6 results section will grow when the Kaggle training completes.</em>
           </p>
         </article>
